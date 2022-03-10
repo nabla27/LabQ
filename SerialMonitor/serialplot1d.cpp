@@ -141,15 +141,8 @@ SerialGraph1D::SerialGraph1D(QSerialPort *serialPort)
     series->attachAxis(axisX);
     series->attachAxis(axisY);
 
-    qDebug() << "SerialGraph1D" << this;
-    qDebug() << "graph" << graph;
-    qDebug() << "graphView" << graphView;
-    qDebug() << "series" << series;
-    qDebug() << "axisX" << axisX;
-    qDebug() << "graph parent" << graph->parent();
-    qDebug() << "graphView parent" << graphView->parent();
-    qDebug() << "series parent" << series->parent();
-    qDebug() << "axisX parent" << axisX->parent();
+    //seriesやaxisの親はChartDataSetクラスになっている。QThreadへ移動できない
+    //ChartDataSetクラスはQWidgetクラスであるため、Threadの移動はできない
 }
 
 void SerialGraph1D::showThread()
