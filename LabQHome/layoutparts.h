@@ -27,7 +27,7 @@ class RGBEditLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    RGBEditLayout(QWidget *parent);
+    RGBEditLayout(QWidget *parent, const int labelWidth = SETTING_LABEL_WIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
@@ -69,7 +69,7 @@ class ComboEditLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    ComboEditLayout(QWidget *parent, const QString& text = "");
+    ComboEditLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
@@ -108,7 +108,7 @@ class LineEditLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    LineEditLayout(QWidget *parent, const QString& text = "");
+    LineEditLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
@@ -144,7 +144,7 @@ class SpinBoxEditLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    SpinBoxEditLayout(QWidget *parent, const QString& text = "");
+    SpinBoxEditLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
@@ -174,7 +174,7 @@ class CheckBoxLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    explicit CheckBoxLayout(QWidget *parent, const QString& text = "");
+    explicit CheckBoxLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }

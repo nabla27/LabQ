@@ -4,6 +4,11 @@
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QScreen>
+#include <QHBoxLayout>
+#include <QChart>
+#include "chartview.h"
+#include "graph2d.h"
+#include "graphsettingwidget.h"
 #include "utility.h"
 
 class Plot2D : public QMainWindow
@@ -16,5 +21,11 @@ public:
 
 private:
     void initializeMenuBar();
+    void initializeLayout();
+
+private:
+    Graph2D *chart;
+    ChartView *chartView;
+    GraphSettingWidget *graphSetting;
 };
 #endif // PLOT2D_H

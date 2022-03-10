@@ -3,7 +3,7 @@
 
 
 
-RGBEditLayout::RGBEditLayout(QWidget *parent)
+RGBEditLayout::RGBEditLayout(QWidget *parent, const int labelWidth)
 {
     label = new QLabel(parent);
     rEdit = new QLineEdit(parent);
@@ -18,7 +18,7 @@ RGBEditLayout::RGBEditLayout(QWidget *parent)
     addItem(spacer);
 
     setEditMaximumWidth(25);
-    setLabelMinimumWidth(SETTING_LABEL_WIDTH);
+    setLabelMinimumWidth(labelWidth);
 
     connect(rEdit, &QLineEdit::textEdited, [this](){ emit colorEdited(getColor()); });
     connect(gEdit, &QLineEdit::textEdited, [this](){ emit colorEdited(getColor()); });
@@ -70,7 +70,7 @@ void RGBEditLayout::setColorAndEditable(const int index)
 }
 
 
-ComboEditLayout::ComboEditLayout(QWidget *parent, const QString& text)
+ComboEditLayout::ComboEditLayout(QWidget *parent, const QString& text, const int labelWidth)
 {
     label = new QLabel(text, parent);
     combo = new QComboBox(parent);
@@ -80,7 +80,7 @@ ComboEditLayout::ComboEditLayout(QWidget *parent, const QString& text)
     addWidget(combo);
     addItem(spacer);
 
-    setLabelMinimumWidth(SETTING_LABEL_WIDTH);
+    setLabelMinimumWidth(labelWidth);
     setComboMinimumWidth(SETTING_EDIT_LWIDTH);
 
     connect(combo, &QComboBox::currentIndexChanged, [this](){ emit currentComboIndexChanged(combo->currentIndex()); });
@@ -93,7 +93,7 @@ void ComboEditLayout::setVisible(bool visible)
 }
 
 
-LineEditLayout::LineEditLayout(QWidget *parent, const QString& text)
+LineEditLayout::LineEditLayout(QWidget *parent, const QString& text, const int labelWidth)
 {
     label = new QLabel(text, parent);
     lineEdit = new QLineEdit(parent);
@@ -103,7 +103,7 @@ LineEditLayout::LineEditLayout(QWidget *parent, const QString& text)
     addWidget(lineEdit);
     addItem(spacer);
 
-    setLabelMinimumWidth(SETTING_LABEL_WIDTH);
+    setLabelMinimumWidth(labelWidth);
     setLineEditMaximumWidth(SETTING_EDIT_LWIDTH);
 
     connect(lineEdit, &QLineEdit::textEdited, [this](){ emit lineTextEdited(lineEdit->text()); });
@@ -122,7 +122,7 @@ void LineEditLayout::lineStrToDouble(const QString &text)
 }
 
 
-SpinBoxEditLayout::SpinBoxEditLayout(QWidget *parent, const QString& text)
+SpinBoxEditLayout::SpinBoxEditLayout(QWidget *parent, const QString& text, const int labelWidth)
 {
     label = new QLabel(text, parent);
     spinBox = new QSpinBox(parent);
@@ -132,7 +132,7 @@ SpinBoxEditLayout::SpinBoxEditLayout(QWidget *parent, const QString& text)
     addWidget(spinBox);
     addItem(spacer);
 
-    setLabelMinimumWidth(SETTING_LABEL_WIDTH);
+    setLabelMinimumWidth(labelWidth);
     setSpinBoxMaximumWidth(SETTING_EDIT_LWIDTH);
 
     connect(spinBox, &QSpinBox::valueChanged, [this](){ emit spinBoxValueChanged(spinBox->value()); });
@@ -144,7 +144,7 @@ void SpinBoxEditLayout::setVisible(bool visible)
     spinBox->setVisible(visible);
 }
 
-CheckBoxLayout::CheckBoxLayout(QWidget *parent, const QString& text)
+CheckBoxLayout::CheckBoxLayout(QWidget *parent, const QString& text, const int labelWidth)
 {
     label = new QLabel(text, parent);
     checkBox = new QCheckBox(parent);
@@ -154,7 +154,7 @@ CheckBoxLayout::CheckBoxLayout(QWidget *parent, const QString& text)
     addWidget(checkBox);
     addItem(spacer);
 
-    setLabelMinimumWidth(SETTING_LABEL_WIDTH);
+    setLabelMinimumWidth(labelWidth);
 
     connect(checkBox, &QCheckBox::toggled, this, &CheckBoxLayout::checkBoxToggled);
 }
