@@ -28,7 +28,7 @@ class AxisCommonSetting : public QWidget
     Q_OBJECT
 
 public:
-    AxisCommonSetting(QWidget *parent, Graph2D::AxisType type);
+    AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis);
 
 private:
     LineEditLayout *rangeMin;
@@ -48,6 +48,22 @@ private:
     ComboEditLayout *axisColor;
     RGBEditLayout *axisColorCustom;
     CheckBoxLayout *reverse;
+
+signals:
+    void rangeMinSet(const double& min);
+    void rangeMaxSet(const double& max);
+    void titleVisibleChanged(const bool visible);
+    void titleSet(const QString& title);
+    void titleSizeSet(const int ps);
+    void gridVisibleChanged(const bool visible);
+    void gridColorSet(const QColor& color);
+    void labelVisibleChanged(const bool visible);
+    void labelAngleSet(const double& angle);
+    void labelSizeSet(const int ps);
+    void labelColorSet(const QColor& color);
+    void axisVisibleChanged(const bool visible);
+    void axisColorSet(const QColor& color);
+    void reverseChanged(const bool reverse);
 };
 
 
@@ -60,12 +76,19 @@ class HorizontalAxisSetting : public QScrollArea
 public:
     HorizontalAxisSetting(QWidget *parent);
 
+private slots:
+    void createNewAxis();
+
 private:
     ComboEditLayout *axisType;
     ComboEditLayout *axisAlign;
     PushButtonLayout *addButton;
     ComboEditLayout *axisCombo;
+    QComboBox *axisIndex;
     QStackedWidget *settingStack;
+
+signals:
+    void axisCreated(QAbstractAxis *axis, const Graph2D::AxisAlign align);
 };
 
 #endif // GRAPHSETTINGWIDGET_H

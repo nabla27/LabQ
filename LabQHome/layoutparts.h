@@ -15,6 +15,7 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <QMouseEvent>
+#include <QDateTime>
 
 #define SETTING_EDIT_LWIDTH 110
 #define SETTING_EDIT_SWIDTH 35
@@ -108,7 +109,7 @@ class LineEditLayout : public QHBoxLayout
     Q_OBJECT
 
 public:
-    LineEditLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH);
+    LineEditLayout(QWidget *parent, const QString& text = "", const int labelWidth = SETTING_LABEL_WIDTH, const int editWidth = SETTING_EDIT_LWIDTH);
 
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
@@ -118,17 +119,21 @@ public:
 
 public slots:
     void setLineEditText(const QString& text) { lineEdit->setText(text); }
+    void setLineEditValue(const double& val) { lineEdit->setText(QString::number(val)); }
+    void setLineEditDate(const QDateTime& date) { lineEdit->setText(date.toString()); }
     void setVisible(bool visible);
 
 signals:
     void lineTextEdited(const QString& text);
     void lineValueEdited(const double& value);
+    void lineDateEdited(const QDateTime& date);
 
 private:
     QLabel *label;
     QLineEdit *lineEdit;
     QSpacerItem *spacer;
     void lineStrToDouble(const QString& text);
+    void lineStrToDate(const QString& text);
 };
 
 

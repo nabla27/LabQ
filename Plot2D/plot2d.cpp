@@ -52,23 +52,13 @@ void Plot2D::initializeLayout()
     settingLayout->addWidget(graphSetting);
     settingLayout->addLayout(bottomSpace);
 
-    QList<QList<double> > data =
-    {
-        {0, 1},
-        {1, 3},
-        {2, 2},
-        {3, 5},
-        {4, 4}
-    };
-    chart->addSeries(data, Graph2D::SeriesType::Line);
-    chart->setAxis(Graph2D::AxisType::Color, Graph2D::AxisAlign::Bottom);
-    chart->setAxis(Graph2D::AxisType::Value, Graph2D::AxisAlign::Bottom);
-
     layout->setContentsMargins(0, 0, 9, 0);
     chart->getGraph()->setMargins(QMargins(0, 0, 0, 0));
-    graphSetting->setMaximumWidth(260);
-    graphSetting->setMinimumWidth(260);
+    graphSetting->setMaximumWidth(280);
+    graphSetting->setMinimumWidth(280);
     graphSetting->setFrameShape(QFrame::Shape::Box);
+
+    connect(graphSetting->horizontalAxisSetting, &HorizontalAxisSetting::axisCreated, chart, &Graph2D::addAxis);
 }
 
 

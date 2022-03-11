@@ -24,7 +24,7 @@
 #include <QBoxPlotSeries>
 #include <QCandlestickSeries>
 
-class Graph2D : private QObject
+class Graph2D : public QObject
 {
     Q_OBJECT
 
@@ -42,12 +42,9 @@ public:
 
 public:
     QChart* getGraph() const { return this->graph; }
-    void setAxis(const AxisType type, const AxisAlign align);
-    void addSeries(const QList<QList<double>>& data, const SeriesType type);
 
-private:
-    void attachAxisToSeries(QAbstractAxis* axis);
-    void attachSeriesToAxis(QAbstractSeries *series);
+public slots:
+    void addAxis(QAbstractAxis *axis, const Graph2D::AxisAlign align);
 
 private:
     QChart *graph;

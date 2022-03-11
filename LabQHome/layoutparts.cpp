@@ -93,7 +93,7 @@ void ComboEditLayout::setVisible(bool visible)
 }
 
 
-LineEditLayout::LineEditLayout(QWidget *parent, const QString& text, const int labelWidth)
+LineEditLayout::LineEditLayout(QWidget *parent, const QString& text, const int labelWidth, const int editWidth)
 {
     label = new QLabel(text, parent);
     lineEdit = new QLineEdit(parent);
@@ -104,10 +104,13 @@ LineEditLayout::LineEditLayout(QWidget *parent, const QString& text, const int l
     addItem(spacer);
 
     setLabelMinimumWidth(labelWidth);
-    setLineEditMaximumWidth(SETTING_EDIT_LWIDTH);
+    setLineEditMaximumWidth(editWidth);
 
-    connect(lineEdit, &QLineEdit::textEdited, [this](){ emit lineTextEdited(lineEdit->text()); });
+    //connect(lineEdit, &QLineEdit::textEdited, [this](){ emit lineTextEdited(lineEdit->text()); });
+    connect(lineEdit, &QLineEdit::textEdited, this, &LineEditLayout::lineTextEdited);
     connect(lineEdit, &QLineEdit::textEdited, this, &LineEditLayout::lineStrToDouble);
+    connect(lineEdit, &QLineEdit::textEdited, this, &LineEditLayout::lineStrToDate);
+
 }
 
 void LineEditLayout::setVisible(bool visible)
@@ -119,6 +122,11 @@ void LineEditLayout::setVisible(bool visible)
 void LineEditLayout::lineStrToDouble(const QString &text)
 {
     emit lineValueEdited(text.toDouble());
+}
+
+void LineEditLayout::lineStrToDate(const QString &text)
+{
+    emit lineDateEdited(QDateTime::fromString(text));
 }
 
 
