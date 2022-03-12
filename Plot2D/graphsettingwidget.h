@@ -7,7 +7,8 @@
 #include "graph2d.h"
 #include "utility.h"
 
-class HorizontalAxisSetting;
+class AxisSetting;
+class GeneralSetting;
 
 class GraphSettingWidget : public QStackedWidget
 {
@@ -17,7 +18,8 @@ public:
     GraphSettingWidget(QWidget *parent);
 
 public:
-    HorizontalAxisSetting *horizontalAxisSetting;
+    GeneralSetting *generalSetting;
+    AxisSetting *axisSetting;
 };
 
 
@@ -66,15 +68,12 @@ signals:
     void reverseChanged(const bool reverse);
 };
 
-
-
-
-class HorizontalAxisSetting : public QScrollArea
+class AxisSetting : public QScrollArea
 {
     Q_OBJECT
 
 public:
-    HorizontalAxisSetting(QWidget *parent);
+    AxisSetting(QWidget *parent);
 
 private slots:
     void createNewAxis();
@@ -90,5 +89,71 @@ private:
 signals:
     void axisCreated(QAbstractAxis *axis, const Graph2D::AxisAlign align);
 };
+
+
+
+class GeneralSetting : public QScrollArea
+{
+    Q_OBJECT
+
+public:
+    GeneralSetting(QWidget *parent);
+
+private:
+    LineEditLayout *pointX;
+    LineEditLayout *pointY;
+    QLineEdit *marginLeft;
+    QLineEdit *marginRight;
+    QLineEdit *marginBottom;
+    QLineEdit *marginTop;
+    LineEditLayout *graphTitle;
+    SpinBoxEditLayout *graphTitleSize;
+    ComboEditLayout *graphTheme;
+
+signals:
+    void marginLeftSet(const QString& lw);
+    void marginRightSet(const QString& rw);
+    void marginBottomSet(const QString& bh);
+    void marginTopSet(const QString& th);
+    void graphTitleSet(const QString& title);
+    void graphTitleSizeSet(const int ps);
+    void graphThemeSet(const int index);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif // GRAPHSETTINGWIDGET_H

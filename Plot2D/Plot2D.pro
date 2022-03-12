@@ -16,7 +16,8 @@ SOURCES += \
     graph2d.cpp \
     graphsettingwidget.cpp \
     main.cpp \
-    plot2d.cpp
+    plot2d.cpp \
+    tablewidget.cpp
 
 HEADERS += \
     ../LabQHome/layoutparts.h \
@@ -24,7 +25,8 @@ HEADERS += \
     chartview.h \
     graph2d.h \
     graphsettingwidget.h \
-    plot2d.h
+    plot2d.h \
+    tablewidget.h
 
 INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome
 

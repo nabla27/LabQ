@@ -12,12 +12,14 @@ SOURCES += \
     home.cpp \
     layoutparts.cpp \
     labqhome.cpp \
+    tablewidget.cpp \
     utility.cpp
 
 HEADERS += \
     iofile.h \
     labqhome.h \
     layoutparts.h \
+    tablewidget.h \
     utility.h
 
 # Default rules for deployment.

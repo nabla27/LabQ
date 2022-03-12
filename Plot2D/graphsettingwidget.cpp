@@ -1,11 +1,15 @@
 #include "graphsettingwidget.h"
 
+static const int labelWidth = SETTING_LABEL_WIDTH + 20;
+
 GraphSettingWidget::GraphSettingWidget(QWidget *parent)
     : QStackedWidget(parent)
 {
-    horizontalAxisSetting = new HorizontalAxisSetting(this);
+    generalSetting = new GeneralSetting(this);
+    axisSetting = new AxisSetting(this);
 
-    addWidget(horizontalAxisSetting);
+    addWidget(generalSetting);
+    addWidget(axisSetting);
 }
 
 
@@ -40,8 +44,6 @@ GraphSettingWidget::GraphSettingWidget(QWidget *parent)
 AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
     : QWidget(parent)
 {
-    const int labelWidth = SETTING_LABEL_WIDTH + 20;
-
     QVBoxLayout *layout = new QVBoxLayout(this);
     rangeMin = new LineEditLayout(this, "Min", labelWidth);
     rangeMax = new LineEditLayout(this, "Max", labelWidth);
@@ -130,6 +132,8 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 
         QValueAxis *valueAxis = qobject_cast<QValueAxis*>(axis);
 
+        rangeMin->setLineEditValue(valueAxis->min());
+        rangeMax->setLineEditValue(valueAxis->max());
         tickAnchor->setLineEditValue(valueAxis->tickAnchor());
         tickCount->setLineEditValue(valueAxis->tickCount());
         tickInterval->setLineEditValue(valueAxis->tickInterval());
@@ -152,6 +156,9 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
     case QAbstractAxis::AxisTypeBarCategory:
     {
         QBarCategoryAxis *barCategoryAxis = qobject_cast<QBarCategoryAxis*>(axis);
+
+        rangeMin->setLineEditText(barCategoryAxis->min());
+        rangeMax->setLineEditText(barCategoryAxis->max());
 
         connect(rangeMin, &LineEditLayout::lineTextEdited, barCategoryAxis, &QBarCategoryAxis::setMin);
         connect(rangeMax, &LineEditLayout::lineTextEdited, barCategoryAxis, &QBarCategoryAxis::setMax);
@@ -185,6 +192,9 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 
         QCategoryAxis *categoryAxis = qobject_cast<QCategoryAxis*>(axis);
 
+        rangeMin->setLineEditValue(categoryAxis->min());
+        rangeMax->setLineEditValue(categoryAxis->max());
+
         auto addCategory = [categoryAxis, categoryName, categoryValue, categoryNameForRemove](){
             categoryAxis->append(categoryName->text(), categoryValue->text().toDouble());
             categoryNameForRemove->insertItem(0, categoryName->text());
@@ -209,6 +219,8 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 
         QDateTimeAxis *dateAxis = qobject_cast<QDateTimeAxis*>(axis);
 
+        rangeMin->setLineEditDate(dateAxis->min());
+        rangeMax->setLineEditDate(dateAxis->max());
         tickCount->setLineEditValue(dateAxis->tickCount());
 
         connect(tickCount, &LineEditLayout::lineValueEdited, dateAxis, &QDateTimeAxis::setTickCount);
@@ -228,6 +240,8 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 
         QLogValueAxis *logAxis = qobject_cast<QLogValueAxis*>(axis);
 
+        rangeMin->setLineEditValue(logAxis->min());
+        rangeMax->setLineEditValue(logAxis->max());
         baseValue->setLineEditValue(logAxis->base());
         minorTickCount->setLineEditValue(logAxis->minorTickCount());
 
@@ -249,6 +263,8 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 
         QColorAxis *colorAxis = qobject_cast<QColorAxis*>(axis);
 
+        rangeMin->setLineEditValue(colorAxis->min());
+        rangeMax->setLineEditValue(colorAxis->max());
         tickCount->setLineEditValue(colorAxis->tickCount());
         size->setLineEditValue(colorAxis->size());
 
@@ -272,7 +288,7 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
 }
 
 
-HorizontalAxisSetting::HorizontalAxisSetting(QWidget *parent)
+AxisSetting::AxisSetting(QWidget *parent)
     : QScrollArea(parent)
 {
     /* このスクロールエリア */
@@ -302,9 +318,9 @@ HorizontalAxisSetting::HorizontalAxisSetting(QWidget *parent)
     layout->addItem(spacer);
 
     axisType->insertComboItems(0, enumToStrings(Graph2D::AxisType(0)));
-    axisAlign->insertComboItems(0, QStringList() << "Bottom" << "Top");
+    axisAlign->insertComboItems(0, enumToStrings(Graph2D::AxisAlign(0)));
 
-    connect(addButton, &PushButtonLayout::buttonReleased, this, &HorizontalAxisSetting::createNewAxis);
+    connect(addButton, &PushButtonLayout::buttonReleased, this, &AxisSetting::createNewAxis);
     connect(axisIndex, &QComboBox::currentIndexChanged, settingStack, &QStackedWidget::setCurrentIndex);
 }
 
@@ -313,12 +329,15 @@ HorizontalAxisSetting::HorizontalAxisSetting(QWidget *parent)
  * 軸のインスタンスの生成とシグナル&スロットの設定を行う
  * graphにそのインスタンスを追加処理はGraph2D::addAxis()で行う
  */
-void HorizontalAxisSetting::createNewAxis()
+void AxisSetting::createNewAxis()
 {
-    static qsizetype horizontalAxisCount = 0;
+    static qsizetype axisCount = 0;
 
     const Graph2D::AxisType type = Graph2D::AxisType(axisType->currentComboIndex());
-    const Graph2D::AxisAlign align = (axisAlign->currentComboIndex() == 0) ? Graph2D::AxisAlign::Bottom : Graph2D::AxisAlign::Top;
+    const Graph2D::AxisAlign align = Graph2D::AxisAlign(axisAlign->currentComboIndex());
+
+    //QColorAxisをAlignLeftまたはAlignRightに追加するとcrashする
+    if(type == Graph2D::AxisType::Color && (align == Graph2D::AxisAlign::Left || align == Graph2D::AxisAlign::Right)) return;
 
     /* 新しいインスタンスの作成 */
     QAbstractAxis *axis;
@@ -347,7 +366,7 @@ void HorizontalAxisSetting::createNewAxis()
     /* settingWidgetの更新 */
     AxisCommonSetting *axisSetting = new AxisCommonSetting(settingStack, axis);
     settingStack->addWidget(axisSetting);
-    axisIndex->addItem(QString::number(horizontalAxisCount) + " " + enumToString(type) + " Axis");
+    axisIndex->addItem(QString::number(axisCount) + ((axisAlign->currentComboIndex() < 2) ? "  Vertical  " : "  Horizontal  ") + enumToString(type) + "  Axis");
     axisIndex->setCurrentIndex(axisIndex->count() - 1);
 
     /* シグナル&スロット */
@@ -375,8 +394,74 @@ void HorizontalAxisSetting::createNewAxis()
     connect(axisSetting, &AxisCommonSetting::axisVisibleChanged, axis, &QAbstractAxis::setLineVisible);
     connect(axisSetting, &AxisCommonSetting::axisColorSet, axis, &QAbstractAxis::setLinePenColor);
 
-    horizontalAxisCount++;
+    axisCount++;
 }
+
+
+
+
+
+
+GeneralSetting::GeneralSetting(QWidget *parent)
+    : QScrollArea(parent)
+{
+    /* このスクロールエリア全体のレイアウト */
+    QWidget *contents = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(contents);
+    setWidget(contents);
+    setWidgetResizable(true);
+    contents->setLayout(layout);
+
+    /* 設定項目のレイアウト */
+    pointX = new LineEditLayout(contents, "X:", labelWidth);
+    pointY = new LineEditLayout(contents, "Y:", labelWidth);
+    QHBoxLayout *setMarginLayout = new QHBoxLayout;
+    QLabel *setMarginLabel = new QLabel("Mergin (L,R,B,T)", contents);
+    marginLeft = new QLineEdit(contents);
+    marginRight = new QLineEdit(contents);
+    marginBottom = new QLineEdit(contents);
+    marginTop = new QLineEdit(contents);
+    QSpacerItem *setMarginSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    graphTitle = new LineEditLayout(contents, "Title", labelWidth);
+    graphTitleSize = new SpinBoxEditLayout(contents, "Title size", labelWidth);
+    graphTheme = new ComboEditLayout(contents, "Theme", labelWidth);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(pointX);
+    layout->addLayout(pointY);
+    layout->addLayout(setMarginLayout);
+    setMarginLayout->addWidget(setMarginLabel);
+    setMarginLayout->addWidget(marginLeft);
+    setMarginLayout->addWidget(marginRight);
+    setMarginLayout->addWidget(marginBottom);
+    setMarginLayout->addWidget(marginTop);
+    setMarginLayout->addItem(setMarginSpacer);
+    layout->addLayout(graphTitle);
+    layout->addLayout(graphTitleSize);
+    layout->addLayout(graphTheme);
+    layout->addItem(spacer);
+
+    pointX->setReadOnly(true);
+    pointY->setReadOnly(true);
+    setMarginLabel->setMinimumWidth(labelWidth);
+    marginLeft->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
+    marginRight->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
+    marginBottom->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
+    marginTop->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
+    graphTheme->insertComboItems(0, enumToStrings(Graph2D::Theme(0)));
+
+    connect(marginLeft, &QLineEdit::textEdited, this, &GeneralSetting::marginLeftSet);
+    connect(marginRight, &QLineEdit::textEdited, this, &GeneralSetting::marginRightSet);
+    connect(marginBottom, &QLineEdit::textEdited, this, &GeneralSetting::marginBottomSet);
+    connect(marginTop, &QLineEdit::textEdited, this, &GeneralSetting::marginTopSet);
+    connect(graphTitle, &LineEditLayout::lineTextEdited, this, &GeneralSetting::graphTitleSet);
+    connect(graphTitleSize, &SpinBoxEditLayout::spinBoxValueChanged, this, &GeneralSetting::graphTitleSizeSet);
+    connect(graphTheme, &ComboEditLayout::currentComboIndexChanged, this, &GeneralSetting::graphThemeSet);
+}
+
+
+
+
 
 
 

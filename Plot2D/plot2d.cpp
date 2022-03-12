@@ -5,8 +5,8 @@ Plot2D::Plot2D(QWidget *parent)
 {
     setGeometry(getRectFromScreenRatio(screen()->size(), 0.5f, 0.5f));
 
-    initializeMenuBar();
     initializeLayout();
+    initializeMenuBar();
 }
 
 Plot2D::~Plot2D()
@@ -24,6 +24,12 @@ void Plot2D::initializeMenuBar()
 
     QMenu *widgetMenu = new QMenu("Widget", menuBar);
     menuBar->addMenu(widgetMenu);
+
+    QMenu *addSeries = new QMenu("Series", menuBar);
+    QAction *readFile = new QAction("file", addSeries);
+    menuBar->addMenu(addSeries);
+    addSeries->addAction(readFile);
+    connect(readFile, &QAction::triggered, chart, &Graph2D::readFile);
 
     setMenuBar(menuBar);
 }
@@ -52,13 +58,22 @@ void Plot2D::initializeLayout()
     settingLayout->addWidget(graphSetting);
     settingLayout->addLayout(bottomSpace);
 
+    settingItem->addItems(QStringList() << "General" << "Axis");
     layout->setContentsMargins(0, 0, 9, 0);
     chart->getGraph()->setMargins(QMargins(0, 0, 0, 0));
     graphSetting->setMaximumWidth(280);
     graphSetting->setMinimumWidth(280);
     graphSetting->setFrameShape(QFrame::Shape::Box);
 
-    connect(graphSetting->horizontalAxisSetting, &HorizontalAxisSetting::axisCreated, chart, &Graph2D::addAxis);
+    connect(settingItem, &QComboBox::currentIndexChanged, graphSetting, &GraphSettingWidget::setCurrentIndex);
+    connect(graphSetting->axisSetting, &AxisSetting::axisCreated, chart, &Graph2D::addAxis);
+    connect(graphSetting->generalSetting, &GeneralSetting::marginLeftSet, chart, &Graph2D::setMarginLeft);
+    connect(graphSetting->generalSetting, &GeneralSetting::marginRightSet, chart, &Graph2D::setMarginRight);
+    connect(graphSetting->generalSetting, &GeneralSetting::marginBottomSet, chart, &Graph2D::setMarginBottom);
+    connect(graphSetting->generalSetting, &GeneralSetting::marginTopSet, chart, &Graph2D::setMarginTop);
+    connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSet, chart, &Graph2D::setGraphTitle);
+    connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSizeSet, chart, &Graph2D::setGraphTitleSize);
+    connect(graphSetting->generalSetting, &GeneralSetting::graphThemeSet, chart, &Graph2D::setGraphTheme);
 }
 
 
