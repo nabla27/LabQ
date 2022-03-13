@@ -25,8 +25,6 @@
 #include <QBoxSet>
 #include <QCandlestickSeries>
 
-#include <QFileDialog>
-
 class Graph2D : public QObject
 {
     Q_OBJECT
@@ -39,11 +37,17 @@ public:
     enum class AxisAlign { Left, Right, Bottom, Top };
     enum class SeriesType { Line, Area, Bar, StackedBar, PercentBar, Pie, Scatter, Spline, HorizontalBar, HorizontalStackedBar, HorizontalPercentBar, BoxPlot, Candlestick };
     enum class Theme { Light, BlueCerulean, Dark, BrownSand, BlueNcs, HighContrast, BlueIcy, Qt };
+    enum class MarkerShape { Circle, Rectangle, RotatedRectangle, Triangle, Star, Pentagon };
+    enum class BarLabelPosition { Center, InsideEnd, InsideBase, OutsideEnd };
+    enum class PieLabelPosition { Outsize, InsideHorizontal, InsideTangential, InsizeNormal };
 
     Q_ENUM(AxisType)
     Q_ENUM(AxisAlign)
     Q_ENUM(SeriesType)
     Q_ENUM(Theme)
+    Q_ENUM(MarkerShape)
+    Q_ENUM(BarLabelPosition)
+    Q_ENUM(PieLabelPosition)
 
 public:
     QChart* getGraph() const { return this->graph; }
@@ -57,11 +61,6 @@ public slots:
     void setGraphTitle(const QString& title);
     void setGraphTitleSize(const int ps);
     void setGraphTheme(const int index);
-
-    void readFile();
-
-private:
-    void readCsvFile(const QString& filePath);
 
 private:
     QChart *graph;

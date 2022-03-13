@@ -11,22 +11,24 @@ CONFIG += c++11
 
 SOURCES += \
     ../LabQHome/layoutparts.cpp \
+    ../LabQHome/tablewidget.cpp \
     ../LabQHome/utility.cpp \
     chartview.cpp \
     graph2d.cpp \
     graphsettingwidget.cpp \
     main.cpp \
     plot2d.cpp \
-    tablewidget.cpp
+    tablewindow.cpp
 
 HEADERS += \
     ../LabQHome/layoutparts.h \
+    ../LabQHome/tablewidget.h \
     ../LabQHome/utility.h \
     chartview.h \
     graph2d.h \
     graphsettingwidget.h \
     plot2d.h \
-    tablewidget.h
+    tablewindow.h
 
 INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome
 

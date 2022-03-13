@@ -10,6 +10,7 @@
 #include "graph2d.h"
 #include "graphsettingwidget.h"
 #include "utility.h"
+#include "tablewindow.h"
 
 class Plot2D : public QMainWindow
 {
@@ -27,5 +28,6 @@ private:
     Graph2D *chart;
     ChartView *chartView;
     GraphSettingWidget *graphSetting;
+    TableWindow *table;
 };
 #endif // PLOT2D_H

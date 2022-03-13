@@ -9,6 +9,7 @@
 
 class AxisSetting;
 class GeneralSetting;
+class SeriesSetting;
 
 class GraphSettingWidget : public QStackedWidget
 {
@@ -20,6 +21,7 @@ public:
 public:
     GeneralSetting *generalSetting;
     AxisSetting *axisSetting;
+    SeriesSetting *seriesSetting;
 };
 
 
@@ -120,6 +122,22 @@ signals:
     void graphThemeSet(const int index);
 };
 
+
+
+class SeriesSetting : public QScrollArea
+{
+    Q_OBJECT
+
+public:
+    SeriesSetting(QWidget *parent);
+
+public slots:
+    void addSeries(QAbstractSeries *series);
+
+private:
+    QComboBox *seriesCombo;
+    QStackedWidget *stackWidget;
+};
 
 
 

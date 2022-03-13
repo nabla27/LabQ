@@ -7,9 +7,11 @@ GraphSettingWidget::GraphSettingWidget(QWidget *parent)
 {
     generalSetting = new GeneralSetting(this);
     axisSetting = new AxisSetting(this);
+    seriesSetting = new SeriesSetting(this);
 
     addWidget(generalSetting);
     addWidget(axisSetting);
+    addWidget(seriesSetting);
 }
 
 
@@ -460,6 +462,360 @@ GeneralSetting::GeneralSetting(QWidget *parent)
 }
 
 
+
+
+
+
+
+SeriesSetting::SeriesSetting(QWidget *parent)
+    : QScrollArea(parent)
+{
+    QWidget *contents = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(contents);
+    seriesCombo = new QComboBox(contents);
+    stackWidget = new QStackedWidget(contents);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    setWidget(contents);
+    setWidgetResizable(true);
+    contents->setLayout(layout);
+    layout->addWidget(seriesCombo);
+    layout->addWidget(stackWidget);
+    layout->addItem(spacer);
+
+    connect(seriesCombo, &QComboBox::currentIndexChanged, stackWidget, &QStackedWidget::setCurrentIndex);
+}
+
+void SeriesSetting::addSeries(QAbstractSeries *series)
+{
+    /* 各Seriesが一つもつ設定のためのWidget */
+    QWidget *settingWidget = new QWidget(stackWidget);
+    QVBoxLayout *layout = new QVBoxLayout(settingWidget);
+
+    /* 共通設定項目 */
+    CheckBoxLayout *seriesVisible = new CheckBoxLayout(settingWidget, "Visible", labelWidth);
+    LineEditLayout *seriesName = new LineEditLayout(settingWidget, "Name", labelWidth);
+    layout->addLayout(seriesVisible);
+    layout->addLayout(seriesName);
+    connect(seriesVisible, &CheckBoxLayout::checkBoxToggled, series, &QAbstractSeries::setVisible);
+    connect(seriesName, &LineEditLayout::lineTextEdited, series, &QAbstractSeries::setName);
+
+
+    /* 各Seriesの種別特有の設定項目 */
+    const QAbstractSeries::SeriesType type = series->type();
+
+    switch(type)
+    {
+    case QAbstractSeries::SeriesTypeScatter:
+    {
+        ComboEditLayout *markerShape = new ComboEditLayout(settingWidget, "Marker shape", labelWidth);
+        ComboEditLayout *borderColor = new ComboEditLayout(settingWidget, "Border color", labelWidth);
+        RGBEditLayout *borderColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        layout->addLayout(markerShape);
+        layout->addLayout(borderColor);
+        layout->addLayout(borderColorCustom);
+        markerShape->insertComboItems(0, enumToStrings(Graph2D::MarkerShape(0)));
+        borderColor->insertComboItems(0, colorNameList());
+        borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+
+        QScatterSeries *scatterSeries = qobject_cast<QScatterSeries*>(series);
+
+        markerShape->setComboCurrentIndex(scatterSeries->markerShape());
+        borderColorCustom->setColor(scatterSeries->borderColor());
+
+        auto setMarkerShape = [scatterSeries](const int index){
+            scatterSeries->setMarkerShape(QScatterSeries::MarkerShape(index));
+        };
+
+        connect(markerShape, &ComboEditLayout::currentComboIndexChanged, setMarkerShape);
+        connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(borderColorCustom, &RGBEditLayout::colorEdited, scatterSeries, &QScatterSeries::setBorderColor);
+    }
+    case QAbstractSeries::SeriesTypeLine:
+    case QAbstractSeries::SeriesTypeSpline:
+    {
+        CheckBoxLayout *fitLineVisible = new CheckBoxLayout(settingWidget, "Fit line", labelWidth);
+        ComboEditLayout *fitLineColor = new ComboEditLayout(settingWidget, "Fit line color", labelWidth);
+        RGBEditLayout *fitLineColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        ComboEditLayout *lineColor = new ComboEditLayout(settingWidget, "Line color", labelWidth);
+        RGBEditLayout *lineColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        LineEditLayout *markerSize = new LineEditLayout(settingWidget, "Marker size", labelWidth);
+        CheckBoxLayout *pointVisible = new CheckBoxLayout(settingWidget, "Points visible", labelWidth);
+        CheckBoxLayout *labelVisible = new CheckBoxLayout(settingWidget, "Label visible", labelWidth);
+        CheckBoxLayout *labelClipping = new CheckBoxLayout(settingWidget, "Label clipping", labelWidth);
+        ComboEditLayout *labelColor = new ComboEditLayout(settingWidget, "Label color", labelWidth);
+        RGBEditLayout *labelColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        SpinBoxEditLayout *labelSize = new SpinBoxEditLayout(settingWidget, "Label size", labelWidth);
+        layout->addLayout(fitLineVisible);
+        layout->addLayout(fitLineColor);
+        layout->addLayout(fitLineColorCustom);
+        layout->addLayout(lineColor);
+        layout->addLayout(lineColorCustom);
+        layout->addLayout(markerSize);
+        layout->addLayout(pointVisible);
+        layout->addLayout(labelVisible);
+        layout->addLayout(labelClipping);
+        layout->addLayout(labelColor);
+        layout->addLayout(labelColorCustom);
+        layout->addLayout(labelSize);
+        fitLineColor->insertComboItems(0, colorNameList());
+        fitLineColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+        lineColor->insertComboItems(0, colorNameList());
+        lineColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+        labelColor->insertComboItems(0, colorNameList());
+        labelColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+
+        QXYSeries *xySeries = qobject_cast<QXYSeries*>(series);
+
+        fitLineVisible->setChecked(xySeries->bestFitLineVisible());
+        fitLineColorCustom->setColor(xySeries->bestFitLineColor());
+        lineColorCustom->setColor(xySeries->color());
+        markerSize->setLineEditValue(xySeries->markerSize());
+        pointVisible->setChecked(xySeries->pointsVisible());
+        labelVisible->setChecked(xySeries->pointLabelsVisible());
+        labelClipping->setChecked(xySeries->pointLabelsClipping());
+        labelColorCustom->setColor(xySeries->pointLabelsColor());
+        labelSize->setSpinBoxValue(xySeries->pointLabelsFont().pointSize());
+
+        auto setLabelSize = [xySeries](const int ps){
+            QFont font = xySeries->pointLabelsFont();
+            font.setPointSize(ps);
+            xySeries->setPointLabelsFont(font);
+        };
+
+        connect(fitLineVisible, &CheckBoxLayout::checkBoxToggled, xySeries, &QXYSeries::setBestFitLineVisible);
+        connect(fitLineColor, &ComboEditLayout::currentComboIndexChanged, fitLineColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(fitLineColorCustom, &RGBEditLayout::colorEdited, xySeries, &QXYSeries::setBestFitLineColor);
+        connect(lineColor, &ComboEditLayout::currentComboIndexChanged, lineColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(lineColorCustom, &RGBEditLayout::colorEdited, xySeries, &QXYSeries::setColor);
+        connect(markerSize, &LineEditLayout::lineValueEdited, xySeries, &QXYSeries::setMarkerSize);
+        connect(pointVisible, &CheckBoxLayout::checkBoxToggled, xySeries, &QXYSeries::setPointsVisible);
+        connect(labelVisible, &CheckBoxLayout::checkBoxToggled, xySeries, &QXYSeries::setPointLabelsVisible);
+        connect(labelClipping, &CheckBoxLayout::checkBoxToggled, xySeries, &QXYSeries::setPointLabelsClipping);
+        connect(labelColor, &ComboEditLayout::currentComboIndexChanged, labelColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(labelColorCustom, &RGBEditLayout::colorEdited, xySeries, &QXYSeries::setPointLabelsColor);
+        connect(labelSize, &SpinBoxEditLayout::spinBoxValueChanged, setLabelSize);
+
+        break;
+    }
+    case QAbstractSeries::SeriesTypeBar:
+    case QAbstractSeries::SeriesTypePercentBar:
+    case QAbstractSeries::SeriesTypeStackedBar:
+    case QAbstractSeries::SeriesTypeHorizontalBar:
+    case QAbstractSeries::SeriesTypeHorizontalPercentBar:
+    case QAbstractSeries::SeriesTypeHorizontalStackedBar:
+    {
+        LineEditLayout *barWidth = new LineEditLayout(settingWidget, "Bar width", labelWidth, SETTING_EDIT_SWIDTH);
+        CheckBoxLayout *labelVisible = new CheckBoxLayout(settingWidget, "Label visible", labelWidth);
+        LineEditLayout *labelAngle = new LineEditLayout(settingWidget, "Label angle", labelWidth, SETTING_EDIT_SWIDTH);
+        ComboEditLayout *labelPosition = new ComboEditLayout(settingWidget, "Label position", labelWidth);
+        SpinBoxEditLayout *labelPrecision = new SpinBoxEditLayout(settingWidget, "Label precision", labelWidth);
+        layout->addLayout(barWidth);
+        layout->addLayout(labelVisible);
+        layout->addLayout(labelAngle);
+        layout->addLayout(labelPosition);
+        layout->addLayout(labelPrecision);
+        labelPosition->insertComboItems(0, enumToStrings(Graph2D::BarLabelPosition(0)));
+
+        QAbstractBarSeries *barSeries = qobject_cast<QAbstractBarSeries*>(series);
+
+        barWidth->setLineEditValue(barSeries->barWidth());
+        labelVisible->setChecked(barSeries->isLabelsVisible());
+        labelAngle->setLineEditValue(barSeries->labelsAngle());
+        labelPosition->setComboCurrentIndex(barSeries->labelsPosition());
+        labelPrecision->setSpinBoxValue(barSeries->labelsPrecision());
+
+        auto setLabelPosition = [barSeries](const int index){
+            barSeries->setLabelsPosition(QAbstractBarSeries::LabelsPosition(index));
+        };
+
+        connect(barWidth, &LineEditLayout::lineValueEdited, barSeries, &QAbstractBarSeries::setBarWidth);
+        connect(labelVisible, &CheckBoxLayout::checkBoxToggled, barSeries, &QAbstractBarSeries::setLabelsVisible);
+        connect(labelAngle, &LineEditLayout::lineValueEdited, barSeries, &QAbstractBarSeries::setLabelsAngle);
+        connect(labelPosition, &ComboEditLayout::currentComboIndexChanged, setLabelPosition);
+        connect(labelPrecision, &SpinBoxEditLayout::spinBoxValueChanged, barSeries, &QAbstractBarSeries::setLabelsPrecision);
+
+        break;
+    }
+    case QAbstractSeries::SeriesTypeArea:
+    {
+        ComboEditLayout *borderColor = new ComboEditLayout(settingWidget, "Border color", labelWidth);
+        RGBEditLayout *borderColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        ComboEditLayout *lineColor = new ComboEditLayout(settingWidget, "Line color", labelWidth);
+        RGBEditLayout *lineColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        CheckBoxLayout *pointVisible = new CheckBoxLayout(settingWidget, "Points visible", labelWidth);
+        CheckBoxLayout *labelVisible = new CheckBoxLayout(settingWidget, "Label visible", labelWidth);
+        CheckBoxLayout *labelClipping = new CheckBoxLayout(settingWidget, "Label clipping", labelWidth);
+        ComboEditLayout *labelColor = new ComboEditLayout(settingWidget, "Label color", labelWidth);
+        RGBEditLayout *labelColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        SpinBoxEditLayout *labelSize = new SpinBoxEditLayout(settingWidget, "Label size", labelWidth);
+        layout->addLayout(borderColor);
+        layout->addLayout(borderColorCustom);
+        layout->addLayout(lineColor);
+        layout->addLayout(lineColorCustom);
+        layout->addLayout(pointVisible);
+        layout->addLayout(labelVisible);
+        layout->addLayout(labelClipping);
+        layout->addLayout(labelColor);
+        layout->addLayout(labelColorCustom);
+        layout->addLayout(labelSize);
+        borderColor->insertComboItems(0, colorNameList());
+        borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+        lineColor->insertComboItems(0, colorNameList());
+        lineColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+        labelColor->insertComboItems(0, colorNameList());
+        labelColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+
+        QAreaSeries *areaSeries = qobject_cast<QAreaSeries*>(series);
+
+        borderColorCustom->setColor(areaSeries->borderColor());
+        lineColorCustom->setColor(areaSeries->color());
+        pointVisible->setChecked(areaSeries->pointsVisible());
+        labelVisible->setChecked(areaSeries->pointLabelsVisible());
+        labelClipping->setChecked(areaSeries->pointLabelsClipping());
+        labelColorCustom->setColor(areaSeries->pointLabelsColor());
+        labelSize->setSpinBoxValue(areaSeries->pointLabelsFont().pointSize());
+
+        auto setLabelSize = [areaSeries](const int ps){
+            QFont font = areaSeries->pointLabelsFont();
+            font.setPointSize(ps);
+            areaSeries->setPointLabelsFont(font);
+        };
+
+        connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(borderColorCustom, &RGBEditLayout::colorEdited, areaSeries, &QAreaSeries::setBorderColor);
+        connect(lineColor, &ComboEditLayout::currentComboIndexChanged, lineColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(lineColorCustom, &RGBEditLayout::colorEdited, areaSeries, &QAreaSeries::setColor);
+        connect(pointVisible, &CheckBoxLayout::checkBoxToggled, areaSeries, &QAreaSeries::setPointsVisible);
+        connect(labelVisible, &CheckBoxLayout::checkBoxToggled, areaSeries, &QAreaSeries::setPointLabelsVisible);
+        connect(labelClipping, &CheckBoxLayout::checkBoxToggled, areaSeries, &QAreaSeries::setPointLabelsClipping);
+        connect(labelColor, &ComboEditLayout::currentComboIndexChanged, labelColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(labelColorCustom, &RGBEditLayout::colorEdited, areaSeries, &QAreaSeries::setPointLabelsColor);
+        connect(labelSize, &SpinBoxEditLayout::spinBoxValueChanged, setLabelSize);
+
+        break;
+    }
+    case QAbstractSeries::SeriesTypeBoxPlot:
+    {
+        LineEditLayout *boxWidth = new LineEditLayout(settingWidget, "Box width", labelWidth, SETTING_EDIT_SWIDTH);
+        CheckBoxLayout *boxOutline = new CheckBoxLayout(settingWidget, "Box outline", labelWidth);
+        layout->addLayout(boxWidth);
+        layout->addLayout(boxOutline);
+
+        QBoxPlotSeries *boxSeries = qobject_cast<QBoxPlotSeries*>(series);
+
+        boxWidth->setLineEditValue(boxSeries->boxWidth());
+        boxOutline->setChecked(boxSeries->boxOutlineVisible());
+
+        connect(boxWidth, &LineEditLayout::lineValueEdited, boxSeries, &QBoxPlotSeries::setBoxWidth);
+        connect(boxOutline, &CheckBoxLayout::checkBoxToggled, boxSeries, &QBoxPlotSeries::setBoxOutlineVisible);
+
+        break;
+    }
+    case QAbstractSeries::SeriesTypeCandlestick:
+    {
+        CheckBoxLayout *bodyOutline = new CheckBoxLayout(settingWidget, "Body outline", labelWidth);
+        LineEditLayout *bodyWidth = new LineEditLayout(settingWidget, "Body width", labelWidth, SETTING_EDIT_SWIDTH);
+        CheckBoxLayout *capsVisible = new CheckBoxLayout(settingWidget, "Caps visible", labelWidth);
+        LineEditLayout *capsWidth = new LineEditLayout(settingWidget, "Caps width", labelWidth, SETTING_EDIT_SWIDTH);
+        ComboEditLayout *decreasingColor = new ComboEditLayout(settingWidget, "Decreasing color", labelWidth);
+        RGBEditLayout *decreasingColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        ComboEditLayout *increasingColor = new ComboEditLayout(settingWidget, "Increasing color", labelWidth);
+        RGBEditLayout *increasingColorCustom = new RGBEditLayout(settingWidget, labelWidth);
+        LineEditLayout *maxColumnWidth = new LineEditLayout(settingWidget, "Max col width", labelWidth, SETTING_EDIT_SWIDTH);
+        LineEditLayout *minColumnWidth = new LineEditLayout(settingWidget, "Min col width", labelWidth, SETTING_EDIT_SWIDTH);
+        layout->addLayout(bodyOutline);
+        layout->addLayout(bodyWidth);
+        layout->addLayout(capsVisible);
+        layout->addLayout(capsWidth);
+        layout->addLayout(decreasingColor);
+        layout->addLayout(decreasingColorCustom);
+        layout->addLayout(increasingColor);
+        layout->addLayout(increasingColorCustom);
+        layout->addLayout(maxColumnWidth);
+        layout->addLayout(minColumnWidth);
+        decreasingColor->insertComboItems(0, colorNameList());
+        decreasingColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT);
+        increasingColor->insertComboItems(0, colorNameList());
+        increasingColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT);
+
+        QCandlestickSeries *candleSeries = qobject_cast<QCandlestickSeries*>(series);
+
+        bodyOutline->setChecked(candleSeries->bodyOutlineVisible());
+        bodyWidth->setLineEditValue(candleSeries->bodyWidth());
+        capsVisible->setChecked(candleSeries->capsVisible());
+        capsWidth->setLineEditValue(candleSeries->capsWidth());
+        decreasingColorCustom->setColor(candleSeries->decreasingColor());
+        increasingColorCustom->setColor(candleSeries->increasingColor());
+        maxColumnWidth->setLineEditValue(candleSeries->maximumColumnWidth());
+        minColumnWidth->setLineEditValue(candleSeries->minimumColumnWidth());
+
+        connect(bodyOutline, &CheckBoxLayout::checkBoxToggled, candleSeries, &QCandlestickSeries::setBodyOutlineVisible);
+        connect(bodyWidth, &LineEditLayout::lineValueEdited, candleSeries, &QCandlestickSeries::setBodyWidth);
+        connect(capsVisible, &CheckBoxLayout::checkBoxToggled, candleSeries, &QCandlestickSeries::setCapsVisible);
+        connect(capsWidth, &LineEditLayout::lineValueEdited, candleSeries, &QCandlestickSeries::setCapsWidth);
+        connect(decreasingColor, &ComboEditLayout::currentComboIndexChanged, decreasingColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(decreasingColorCustom, &RGBEditLayout::colorEdited, candleSeries, &QCandlestickSeries::setDecreasingColor);
+        connect(increasingColor, &ComboEditLayout::currentComboIndexChanged, increasingColorCustom, &RGBEditLayout::setColorAndEditable);
+        connect(increasingColorCustom, &RGBEditLayout::colorEdited, candleSeries, &QCandlestickSeries::setIncreasingColor);
+        connect(maxColumnWidth, &LineEditLayout::lineValueEdited, candleSeries, &QCandlestickSeries::setMaximumColumnWidth);
+        connect(minColumnWidth, &LineEditLayout::lineValueEdited, candleSeries, &QCandlestickSeries::setMinimumColumnWidth);
+
+        break;
+    }
+    case QAbstractSeries::SeriesTypePie:
+    {
+        LineEditLayout *holeSize = new LineEditLayout(settingWidget, "Hole size", labelWidth, SETTING_EDIT_SWIDTH);
+        LineEditLayout *horizontalPos = new LineEditLayout(settingWidget, "Horizontal pos", labelWidth, SETTING_EDIT_SWIDTH);
+        LineEditLayout *verticalPos = new LineEditLayout(settingWidget, "Vertival pos", labelWidth, SETTING_EDIT_SWIDTH);
+        CheckBoxLayout *labelVisible = new CheckBoxLayout(settingWidget, "Label visible", labelWidth);
+        ComboEditLayout *labelPos = new ComboEditLayout(settingWidget, "Label pos", labelWidth);
+        LineEditLayout *pieStartAngle = new LineEditLayout(settingWidget, "Start angle", labelWidth, SETTING_EDIT_SWIDTH);
+        LineEditLayout *pieEndAngle = new LineEditLayout(settingWidget, "End angle", labelWidth, SETTING_EDIT_SWIDTH);
+        LineEditLayout *pieSize = new LineEditLayout(settingWidget, "Pie size", labelWidth, SETTING_EDIT_SWIDTH);
+        layout->addLayout(holeSize);
+        layout->addLayout(horizontalPos);
+        layout->addLayout(verticalPos);
+        layout->addLayout(labelVisible);
+        layout->addLayout(labelPos);
+        layout->addLayout(pieStartAngle);
+        layout->addLayout(pieEndAngle);
+        layout->addLayout(pieSize);
+        labelPos->insertComboItems(0, enumToStrings(Graph2D::PieLabelPosition(0)));
+
+        QPieSeries *pieSeries = qobject_cast<QPieSeries*>(series);
+
+        holeSize->setLineEditValue(pieSeries->holeSize());
+        horizontalPos->setLineEditValue(pieSeries->horizontalPosition());
+        verticalPos->setLineEditValue(pieSeries->verticalPosition());
+        labelVisible->setChecked(false); //変更した場合、すでに追加されている物に対してラベルのvisibleが設定され、それ以降のものはデフォルトのfalseである
+        labelPos->setComboCurrentIndex(QPieSlice::LabelOutside); //変更した場合、すでに追加されているすべてに対して反映される。それ以降追加したものはでフォルトのLabelOutsizeである
+        pieStartAngle->setLineEditValue(pieSeries->pieStartAngle());
+        pieEndAngle->setLineEditValue(pieSeries->pieEndAngle());
+        pieSize->setLineEditValue(pieSeries->pieSize());
+
+        auto setLabelPosition = [pieSeries](const int index){
+            pieSeries->setLabelsPosition(QPieSlice::LabelPosition(index));
+        };
+
+        connect(holeSize, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setHoleSize);
+        connect(horizontalPos, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setHorizontalPosition);
+        connect(verticalPos, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setVerticalPosition);
+        connect(labelVisible, &CheckBoxLayout::checkBoxToggled, pieSeries, &QPieSeries::setLabelsVisible);
+        connect(labelPos, &ComboEditLayout::currentComboIndexChanged, setLabelPosition);
+        connect(pieStartAngle, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setPieStartAngle);
+        connect(pieEndAngle, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setPieEndAngle);
+        connect(pieSize, &LineEditLayout::lineValueEdited, pieSeries, &QPieSeries::setPieSize);
+
+        break;
+    }
+    default:
+        qDebug() << __FILE__ << __LINE__;
+        qDebug() << "Invalid enum index of QAbstractSeries::SeriesType";
+        return;
+    }
+
+    stackWidget->addWidget(settingWidget);
+}
 
 
 

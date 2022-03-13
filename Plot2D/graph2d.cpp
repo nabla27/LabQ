@@ -3,7 +3,7 @@
 Graph2D::Graph2D()
 {
     graph = new QChart;
-
+#if 0
     QLineSeries *series = new QLineSeries;
     QList<QPointF> data =
     {
@@ -18,6 +18,7 @@ Graph2D::Graph2D()
 
     series->append(data);
     graph->addSeries(series);
+#endif
 }
 
 Graph2D::~Graph2D()
@@ -88,23 +89,6 @@ void Graph2D::setGraphTheme(const int index)
 {
     graph->setTheme(QChart::ChartTheme(index));
 }
-
-void Graph2D::readFile()
-{
-    const QString filePath = QFileDialog::getOpenFileName(nullptr,
-                                                          "",
-                                                          "",
-                                                          "*.csv");
-    qDebug() << filePath;
-    if(filePath.endsWith(".csv"))
-        readCsvFile(filePath);
-}
-
-void Graph2D::readCsvFile(const QString& filePath)
-{
-
-}
-
 
 
 

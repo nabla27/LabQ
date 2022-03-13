@@ -5,12 +5,15 @@ Plot2D::Plot2D(QWidget *parent)
 {
     setGeometry(getRectFromScreenRatio(screen()->size(), 0.5f, 0.5f));
 
+    table = new TableWindow(nullptr);
+
     initializeLayout();
     initializeMenuBar();
 }
 
 Plot2D::~Plot2D()
 {
+    delete table;
 }
 
 void Plot2D::initializeMenuBar()
@@ -25,11 +28,14 @@ void Plot2D::initializeMenuBar()
     QMenu *widgetMenu = new QMenu("Widget", menuBar);
     menuBar->addMenu(widgetMenu);
 
-    QMenu *addSeries = new QMenu("Series", menuBar);
-    QAction *readFile = new QAction("file", addSeries);
-    menuBar->addMenu(addSeries);
-    addSeries->addAction(readFile);
-    connect(readFile, &QAction::triggered, chart, &Graph2D::readFile);
+    QMenu *addTable = new QMenu("Table", menuBar);
+    QAction *readFile = new QAction("File", addTable);
+    QAction *showTable = new QAction("Table", addTable);
+    menuBar->addMenu(addTable);
+    addTable->addAction(readFile);
+    addTable->addAction(showTable);
+    connect(readFile, &QAction::triggered, table, &TableWindow::readFile);
+    connect(showTable, &QAction::triggered, table, &TableWindow::show);
 
     setMenuBar(menuBar);
 }
@@ -58,7 +64,7 @@ void Plot2D::initializeLayout()
     settingLayout->addWidget(graphSetting);
     settingLayout->addLayout(bottomSpace);
 
-    settingItem->addItems(QStringList() << "General" << "Axis");
+    settingItem->addItems(QStringList() << "General" << "Axis" << "Series");
     layout->setContentsMargins(0, 0, 9, 0);
     chart->getGraph()->setMargins(QMargins(0, 0, 0, 0));
     graphSetting->setMaximumWidth(280);
@@ -74,6 +80,8 @@ void Plot2D::initializeLayout()
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSet, chart, &Graph2D::setGraphTitle);
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSizeSet, chart, &Graph2D::setGraphTitleSize);
     connect(graphSetting->generalSetting, &GeneralSetting::graphThemeSet, chart, &Graph2D::setGraphTheme);
+    //TableWindow::seriesCreated --> Graph2D::addSeries
+    connect(table, &TableWindow::seriesCreated, graphSetting->seriesSetting, &SeriesSetting::addSeries);
 }
 
 
