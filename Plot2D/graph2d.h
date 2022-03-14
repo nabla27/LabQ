@@ -54,6 +54,7 @@ public:
 
 public slots:
     void addAxis(QAbstractAxis *axis, const Graph2D::AxisAlign align);
+    void addSeries(QAbstractSeries *series) { graph->addSeries(series); }
     void setMarginLeft(const QString& lw);
     void setMarginRight(const QString& rw);
     void setMarginBottom(const QString& bh);

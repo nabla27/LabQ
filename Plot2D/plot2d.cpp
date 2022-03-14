@@ -80,7 +80,7 @@ void Plot2D::initializeLayout()
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSet, chart, &Graph2D::setGraphTitle);
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSizeSet, chart, &Graph2D::setGraphTitleSize);
     connect(graphSetting->generalSetting, &GeneralSetting::graphThemeSet, chart, &Graph2D::setGraphTheme);
-    //TableWindow::seriesCreated --> Graph2D::addSeries
+    connect(table, &TableWindow::seriesCreated, chart, &Graph2D::addSeries);
     connect(table, &TableWindow::seriesCreated, graphSetting->seriesSetting, &SeriesSetting::addSeries);
 }
 

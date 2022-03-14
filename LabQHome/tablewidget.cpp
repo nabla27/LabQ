@@ -234,3 +234,69 @@ void TableWidget::reverseCol()
         }
     }
 }
+
+void TableWidget::transpose()
+{
+    const QList<QTableWidgetSelectionRange> ranges = selectedRanges();
+
+    //選択された行数、列数の大きい方の値に合わせてDim次正方行列で転置を行う
+    for(const QTableWidgetSelectionRange& range : ranges)
+    {
+        const int startRow = range.topRow();
+        const int startCol = range.leftColumn();
+        const int Dim = std::max(range.bottomRow() - startRow, range.rightColumn() - startCol) + 1;
+
+        //転置後の必要な分だけセルを増やす
+        if(columnCount() < startRow + Dim) setColumnCount(startRow + Dim);
+        if(rowCount() <= startCol + Dim) setRowCount(startCol + Dim);
+
+        //データの入れ替え
+        for(int i = 0; i < Dim; ++i){
+            for(int j = i + 1; j < Dim; ++j)
+            {
+                //下三角成分Lと上三角成分を取得
+                const QString dataL = (item(startRow + i, startCol + j)) ? item(startRow + i, startCol + j)->text() : "";
+                const QString dataU = (item(startRow + j, startCol + i)) ? item(startRow + j, startCol + i)->text() : "";
+
+                //上三角成分に下三角成分をセット
+                if(item(startRow + i, startCol + j))
+                    item(startRow + i, startCol + j)->setText(dataU);
+                else
+                {
+                    QTableWidgetItem *item = new QTableWidgetItem(dataU);
+                    setItem(startRow + i, startCol + j, item);
+                }
+                //下三角成分に上三角成分をセット
+                if(item(startRow + j, startCol + i))
+                    item(startRow + j, startCol + i)->setText(dataL);
+                else
+                {
+                    QTableWidgetItem *item = new QTableWidgetItem(dataL);
+                    setItem(startRow + j, startCol + i, item);
+                }
+            }
+        }
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
