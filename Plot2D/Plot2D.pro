@@ -15,6 +15,7 @@ SOURCES += \
     ../LabQHome/utility.cpp \
     chartview.cpp \
     graph2d.cpp \
+    graphicsitem.cpp \
     graphsettingwidget.cpp \
     main.cpp \
     plot2d.cpp \
@@ -26,6 +27,7 @@ HEADERS += \
     ../LabQHome/utility.h \
     chartview.h \
     graph2d.h \
+    graphicsitem.h \
     graphsettingwidget.h \
     plot2d.h \
     tablewindow.h

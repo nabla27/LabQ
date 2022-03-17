@@ -55,7 +55,7 @@ void Plot2D::initializeLayout()
 
     chart = new Graph2D;
     chartView = new ChartView(chart->getGraph(), centralWidget);
-    graphSetting = new GraphSettingWidget(centralWidget);
+    graphSetting = new GraphSettingWidget(centralWidget, chart->getGraph());
 
     layout->addWidget(chartView);
     layout->addLayout(settingLayout);
@@ -64,7 +64,7 @@ void Plot2D::initializeLayout()
     settingLayout->addWidget(graphSetting);
     settingLayout->addLayout(bottomSpace);
 
-    settingItem->addItems(QStringList() << "General" << "Axis" << "Series");
+    settingItem->addItems(QStringList() << "General" << "Legend" << "Axis" << "Series" << "GraphicsItem");
     layout->setContentsMargins(0, 0, 9, 0);
     chart->getGraph()->setMargins(QMargins(0, 0, 0, 0));
     graphSetting->setMaximumWidth(280);
@@ -73,6 +73,7 @@ void Plot2D::initializeLayout()
 
     connect(settingItem, &QComboBox::currentIndexChanged, graphSetting, &GraphSettingWidget::setCurrentIndex);
     connect(graphSetting->axisSetting, &AxisSetting::axisCreated, chart, &Graph2D::addAxis);
+    connect(graphSetting->axisSetting, &AxisSetting::removeAxisRequested, chart, &Graph2D::removeAxis);
     connect(graphSetting->generalSetting, &GeneralSetting::marginLeftSet, chart, &Graph2D::setMarginLeft);
     connect(graphSetting->generalSetting, &GeneralSetting::marginRightSet, chart, &Graph2D::setMarginRight);
     connect(graphSetting->generalSetting, &GeneralSetting::marginBottomSet, chart, &Graph2D::setMarginBottom);
@@ -80,8 +81,11 @@ void Plot2D::initializeLayout()
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSet, chart, &Graph2D::setGraphTitle);
     connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSizeSet, chart, &Graph2D::setGraphTitleSize);
     connect(graphSetting->generalSetting, &GeneralSetting::graphThemeSet, chart, &Graph2D::setGraphTheme);
+    connect(graphSetting->seriesSetting, &SeriesSetting::removeSeriesRequested, chart, &Graph2D::removeSeries);
     connect(table, &TableWindow::seriesCreated, chart, &Graph2D::addSeries);
     connect(table, &TableWindow::seriesCreated, graphSetting->seriesSetting, &SeriesSetting::addSeries);
+    connect(chartView, &ChartView::textItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addTextItemSettingWidget);
+    connect(chartView, &ChartView::lineItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addLineItemSettingWidget);
 }
 
 

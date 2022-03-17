@@ -21,6 +21,7 @@ void TableWindow::readFile()
 
     /* 追加するTable */
     Plot2DTable *table = new Plot2DTable(tableTab);
+    table->setObjectName("(" + fileName + ")");
     connect(table, &Plot2DTable::seriesCreated, this, &TableWindow::seriesCreated);
 
     /* ファイルを読み込み、Tableにデータをセットする */
@@ -187,7 +188,7 @@ void Plot2DTable::onCustomContextMenu(const QPoint& point)
             seriesMenu->addAction(boxPlot);
             connect(boxPlot, &QAction::triggered, this, &Plot2DTable::createBoxPlotSeries);
         }
-        if((colCount == 4 && rangeCount == 1) ||
+        if((colCount == 5 && rangeCount == 1) ||
            (colCount == 1 && rangeCount >= 2))
         {
             QAction *candleStick = new QAction("Candle stick", seriesMenu);
@@ -331,7 +332,7 @@ void Plot2DTable::createLineSeries()
 
     setXYSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "Line  " + objectName());
 }
 
 void Plot2DTable::createScatterSeries()
@@ -340,7 +341,7 @@ void Plot2DTable::createScatterSeries()
 
     setXYSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "Scatter  " + objectName());
 }
 
 void Plot2DTable::createSplineSeries()
@@ -349,7 +350,7 @@ void Plot2DTable::createSplineSeries()
 
     setXYSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "Spline  " + objectName());
 }
 
 void Plot2DTable::createBarSeries()
@@ -358,7 +359,7 @@ void Plot2DTable::createBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "Bar  " + objectName());
 }
 
 void Plot2DTable::createStackedBarSeries()
@@ -367,7 +368,7 @@ void Plot2DTable::createStackedBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "StackedBar  " + objectName());
 }
 
 void Plot2DTable::createPercentBarSeries()
@@ -376,7 +377,7 @@ void Plot2DTable::createPercentBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "PercentBar  " + objectName());
 }
 
 void Plot2DTable::createHorizontalBarSeries()
@@ -385,7 +386,7 @@ void Plot2DTable::createHorizontalBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "HorizontalBar  " + objectName());
 }
 
 void Plot2DTable::createHorizontalStackedBarSeries()
@@ -394,7 +395,7 @@ void Plot2DTable::createHorizontalStackedBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "HorizontalStackedBar  " + objectName());
 }
 
 void Plot2DTable::createHorizontalPercentBarSeries()
@@ -403,7 +404,7 @@ void Plot2DTable::createHorizontalPercentBarSeries()
 
     setBarSeriesData(series, selectedRanges());
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "HorizontaPercentBar  " + objectName());
 }
 
 void Plot2DTable::createLineAreaSeries()
@@ -415,7 +416,7 @@ void Plot2DTable::createLineAreaSeries()
 
     QAreaSeries *series = new QAreaSeries(upperSeries, lowerSeries);
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "LineArea  " + objectName());
 }
 
 
@@ -460,7 +461,7 @@ void Plot2DTable::createPieSeries()
         }
     }
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "Pie  " + objectName());
 }
 
 void Plot2DTable::createBoxPlotSeries()
@@ -536,7 +537,7 @@ void Plot2DTable::createBoxPlotSeries()
         }
     }
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "BoxPlot  " + objectName());
 }
 
 void Plot2DTable::createCandleStickSeries()
@@ -546,27 +547,32 @@ void Plot2DTable::createCandleStickSeries()
 
     QCandlestickSeries *series = new QCandlestickSeries;
 
-    if(colCount == 4)
+    if(colCount == 5)
     {
-        const int openCol = ranges.constFirst().leftColumn();
-        const int highCol = openCol + 1;
-        const int lowCol = openCol + 2;
-        const int closeCol = openCol + 3;
+        const int timeCol = ranges.constFirst().leftColumn();
+        const int openCol = timeCol + 1;
+        const int highCol = timeCol + 2;
+        const int lowCol = timeCol + 3;
+        const int closeCol = timeCol + 4;
         const int startRow = ranges.constFirst().topRow();
         const int endRow = ranges.constFirst().bottomRow();
 
         for(int row = startRow; row <= endRow; ++row)
         {
+            const double timestamp = (item(row, timeCol)) ? item(row,  timeCol)->text().toDouble() : 0;
             const double open = (item(row, openCol)) ? item(row, openCol)->text().toDouble() : 0;
             const double high = (item(row, highCol)) ? item(row, highCol)->text().toDouble() : 0;
             const double low = (item(row, lowCol)) ? item(row, lowCol)->text().toDouble() : 0;
             const double close = (item(row, closeCol)) ? item(row, closeCol)->text().toDouble() : 0;
 
-            QCandlestickSet *set = new QCandlestickSet(open, high, low, close);
+            QCandlestickSet *set = new QCandlestickSet(timestamp);
+            set->setOpen(open);
+            set->setHigh(high);
+            set->setLow(low);
+            set->setClose(close);
 
             series->append(set);
         }
-
     }
     else
     {
@@ -596,7 +602,7 @@ void Plot2DTable::createCandleStickSeries()
         }
     }
 
-    emit seriesCreated(series);
+    emit seriesCreated(series, "CandleStick  " + objectName());
 }
 
 

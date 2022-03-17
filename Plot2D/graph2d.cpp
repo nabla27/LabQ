@@ -3,6 +3,7 @@
 Graph2D::Graph2D()
 {
     graph = new QChart;
+
 #if 0
     QLineSeries *series = new QLineSeries;
     QList<QPointF> data =

@@ -49,7 +49,7 @@ private:
     QTabWidget *tableTab;
 
 signals:
-    void seriesCreated(QAbstractSeries *series);
+    void seriesCreated(QAbstractSeries *series, const QString& name);
 };
 
 
@@ -90,7 +90,7 @@ private:
     QMenu *seriesMenu = nullptr;
 
 signals:
-    void seriesCreated(QAbstractSeries *series);
+    void seriesCreated(QAbstractSeries *series, const QString& name);
 };
 
 

@@ -2,16 +2,25 @@
 
 static const int labelWidth = SETTING_LABEL_WIDTH + 20;
 
-GraphSettingWidget::GraphSettingWidget(QWidget *parent)
+GraphSettingWidget::GraphSettingWidget(QWidget *parent, QChart *graph)
     : QStackedWidget(parent)
 {
     generalSetting = new GeneralSetting(this);
+    legendSetting = new LegendSetting(this, graph->legend());
     axisSetting = new AxisSetting(this);
     seriesSetting = new SeriesSetting(this);
+    graphicsItemSetting = new GraphicsItemSetting(this);
 
     addWidget(generalSetting);
+    addWidget(legendSetting);
     addWidget(axisSetting);
     addWidget(seriesSetting);
+    addWidget(graphicsItemSetting);
+
+    seriesSetting->setAxisListModel(axisSetting->getAxisListModel());
+
+    connect(axisSetting, &AxisSetting::axisCreated, seriesSetting, &SeriesSetting::addAxisToList);
+    connect(axisSetting, &AxisSetting::removeAxisRequested, seriesSetting, &SeriesSetting::removeAxisFromList);
 }
 
 
@@ -285,8 +294,14 @@ AxisCommonSetting::AxisCommonSetting(QWidget *parent, QAbstractAxis *const axis)
     default:
         qDebug() << __FILE__ << __LINE__;
         qDebug() << "Invalid enum index of QAbstractAxis";
-        return;
+        break;
     }
+
+    /* axisを削除するボタン */
+    removeAxis = new PushButtonLayout(this, "Remove");
+    layout->addLayout(removeAxis);
+    auto requestRemoveAxisFromList = [this, axis]() { emit removeAxisFromListRequested(axis); };
+    connect(removeAxis, &PushButtonLayout::buttonReleased, requestRemoveAxisFromList);
 }
 
 
@@ -363,10 +378,12 @@ void AxisSetting::createNewAxis()
         return;
     }
 
+    axis->setObjectName(enumToString(type) + " " + enumToString(align));
     emit axisCreated(axis, align);
 
     /* settingWidgetの更新 */
     AxisCommonSetting *axisSetting = new AxisCommonSetting(settingStack, axis);
+    axisSetting->setObjectName(enumToString(type) + " " + enumToString(align));
     settingStack->addWidget(axisSetting);
     axisIndex->addItem(QString::number(axisCount) + ((axisAlign->currentComboIndex() < 2) ? "  Vertical  " : "  Horizontal  ") + enumToString(type) + "  Axis");
     axisIndex->setCurrentIndex(axisIndex->count() - 1);
@@ -382,6 +399,18 @@ void AxisSetting::createNewAxis()
         labelFont.setPointSize(ps);
         axis->setLabelsFont(labelFont);
     };
+    auto removeAxisFromList = [this](QAbstractAxis *axis){
+#if 0
+        //正しく現在のWidgetが削除されない
+        axisIndex->removeItem(axisIndex->currentIndex());
+        settingStack->removeWidget(settingStack->currentWidget());
+#else
+        QWidget *currentWidget = settingStack->currentWidget();
+        axisIndex->removeItem(axisIndex->currentIndex());
+        settingStack->removeWidget(currentWidget);
+#endif
+        emit removeAxisRequested(axis);;
+    };
     connect(axisSetting, &AxisCommonSetting::rangeMinSet, axis, &QAbstractAxis::setMin);
     connect(axisSetting, &AxisCommonSetting::rangeMaxSet, axis, &QAbstractAxis::setMax);
     connect(axisSetting, &AxisCommonSetting::titleVisibleChanged, axis, &QAbstractAxis::setTitleVisible);
@@ -395,6 +424,7 @@ void AxisSetting::createNewAxis()
     connect(axisSetting, &AxisCommonSetting::labelColorSet, axis, &QAbstractAxis::setLabelsColor);
     connect(axisSetting, &AxisCommonSetting::axisVisibleChanged, axis, &QAbstractAxis::setLineVisible);
     connect(axisSetting, &AxisCommonSetting::axisColorSet, axis, &QAbstractAxis::setLinePenColor);
+    connect(axisSetting, &AxisCommonSetting::removeAxisFromListRequested, removeAxisFromList);
 
     axisCount++;
 }
@@ -467,6 +497,173 @@ GeneralSetting::GeneralSetting(QWidget *parent)
 
 
 
+
+LegendSetting::LegendSetting(QWidget *parent, QLegend *legend)
+    : QScrollArea(parent)
+{
+    /* このスクロールエリア全体のレイアウト */
+    QWidget *contents = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(contents);
+    setWidget(contents);
+    setWidgetResizable(true);
+    contents->setLayout(layout);
+
+    visible = new CheckBoxLayout(contents, "Visible", labelWidth);
+    backgroundVisible = new CheckBoxLayout(contents, "Background", labelWidth);
+    interactive = new CheckBoxLayout(contents, "Interactive", labelWidth);
+    reverseMarker = new CheckBoxLayout(contents, "Reverse marker", labelWidth);
+    showToolTip = new CheckBoxLayout(contents, "Show tooltip", labelWidth);
+    alignment = new ComboEditLayout(contents, "Alignment", labelWidth);
+    markerShape = new ComboEditLayout(contents, "Marker shape", labelWidth);
+    fontSize = new SpinBoxEditLayout(contents, "Size", labelWidth);
+    color = new ComboEditLayout(contents, "Color", labelWidth);
+    colorCustom = new RGBEditLayout(contents, labelWidth);
+    borderColor = new ComboEditLayout(contents, "Border color", labelWidth);
+    borderColorCustom = new RGBEditLayout(contents, labelWidth);
+    labelColor = new ComboEditLayout(contents, "Label color", labelWidth);
+    labelColorCustom = new RGBEditLayout(contents, labelWidth);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(visible);
+    layout->addLayout(backgroundVisible);
+    layout->addLayout(interactive);
+    layout->addLayout(reverseMarker);
+    layout->addLayout(showToolTip);
+    layout->addLayout(alignment);
+    layout->addLayout(markerShape);
+    layout->addLayout(fontSize);
+    layout->addLayout(color);
+    layout->addLayout(colorCustom);
+    layout->addLayout(borderColor);
+    layout->addLayout(borderColorCustom);
+    layout->addLayout(labelColor);
+    layout->addLayout(labelColorCustom);
+    layout->addItem(spacer);
+
+    visible->setChecked(legend->isVisible());
+    backgroundVisible->setChecked(legend->isBackgroundVisible());
+    interactive->setChecked(legend->isInteractive());
+    reverseMarker->setChecked(legend->reverseMarkers());
+    showToolTip->setChecked(legend->showToolTips());
+    alignment->insertComboItems(0, enumToStrings(Graph2D::LegendAlign(0)));
+    alignment->setComboCurrentIndex((int)Graph2D::LegendAlign::Top);
+    markerShape->insertComboItems(0, enumToStrings(Graph2D::LegendMarkerShape(0)));
+    markerShape->setComboCurrentIndex((int)Graph2D::LegendMarkerShape::Rectangle);
+    fontSize->setSpinBoxValue(legend->font().pointSize());
+    color->insertComboItems(0, colorNameList());
+    color->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    colorCustom->setColor(legend->color());
+    borderColor->insertComboItems(0, colorNameList());
+    borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    borderColorCustom->setColor(legend->borderColor());
+    labelColor->insertComboItems(0, colorNameList());
+    labelColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    labelColorCustom->setColor(legend->labelColor());
+
+    auto setLegendVisible = [legend](const bool visible){
+        legend->setVisible(visible);
+    };
+    auto setLegendAlignment = [legend](const int index)
+    {
+        switch(Graph2D::LegendAlign(index))
+        {
+        case Graph2D::LegendAlign::Bottom:
+            legend->setAlignment(Qt::AlignBottom); break;
+        case Graph2D::LegendAlign::Left:
+            legend->setAlignment(Qt::AlignLeft); break;
+        case Graph2D::LegendAlign::Right:
+            legend->setAlignment(Qt::AlignRight); break;
+        case Graph2D::LegendAlign::Top:
+            legend->setAlignment(Qt::AlignTop); break;
+        default:
+            qDebug() << __FILE__ << __LINE__;
+            qDebug() << "Invalid enum index of Graph2D::LegendAlign";
+            return;
+        }
+    };
+    auto setLegendMarkerShape = [legend](const int index)
+    {
+        legend->setMarkerShape(QLegend::MarkerShape(index));
+    };
+    auto setLegendFontSize = [legend](const int ps)
+    {
+        QFont font = legend->font();
+        font.setPointSize(ps);
+        legend->setFont(font);
+    };
+    connect(visible, &CheckBoxLayout::checkBoxToggled, setLegendVisible);
+    connect(backgroundVisible, &CheckBoxLayout::checkBoxToggled, legend, &QLegend::setBackgroundVisible);
+    connect(interactive, &CheckBoxLayout::checkBoxToggled, legend, &QLegend::setInteractive);
+    connect(reverseMarker, &CheckBoxLayout::checkBoxToggled, legend, &QLegend::setReverseMarkers);
+    connect(showToolTip, &CheckBoxLayout::checkBoxToggled, legend, &QLegend::setShowToolTips);
+    connect(alignment, &ComboEditLayout::currentComboIndexChanged, setLegendAlignment);
+    connect(markerShape, &ComboEditLayout::currentComboIndexChanged, setLegendMarkerShape);
+    connect(fontSize, &SpinBoxEditLayout::spinBoxValueChanged, setLegendFontSize);
+    connect(color, &ComboEditLayout::currentComboIndexChanged, colorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(colorCustom, &RGBEditLayout::colorEdited, legend, &QLegend::setColor);
+    connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(borderColorCustom, &RGBEditLayout::colorEdited, legend, &QLegend::setBorderColor);
+    connect(labelColor, &ComboEditLayout::currentComboIndexChanged, labelColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(labelColorCustom, &RGBEditLayout::colorEdited, legend, &QLegend::setLabelColor);
+}
+
+
+
+
+
+
+
+
+
+
+AxisAttachingList::AxisAttachingList(QAbstractItemModel *model, QWidget *parent)
+    : QHBoxLayout(parent)
+{
+    axisComboList = new QComboBox;
+    attach = new QCheckBox;
+
+    addWidget(axisComboList);
+    addWidget(attach);
+
+    axisComboList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    axisComboList->setModel(model);
+    attach->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+    connect(model, &QAbstractItemModel::rowsAboutToBeInserted, this, &AxisAttachingList::addStateListIndex);
+    connect(model, &QAbstractItemModel::rowsRemoved, this, &AxisAttachingList::removeStateList);
+    connect(axisComboList, &QComboBox::currentIndexChanged, this, &AxisAttachingList::changeCheckBoxIndex);
+    connect(attach, &QCheckBox::toggled, this, &AxisAttachingList::changeState);
+}
+
+void AxisAttachingList::addStateListIndex()
+{
+    stateList.append(false);
+}
+
+void AxisAttachingList::removeStateList(const QModelIndex&, int first, int last)
+{
+    for(int index = first; index <= last; ++index)
+        stateList.remove(index);
+}
+
+void AxisAttachingList::changeCheckBoxIndex(const int index)
+{
+    if(index < 0) return;
+    attach->setChecked(stateList.at(index));
+}
+
+void AxisAttachingList::changeState(const bool checked)
+{
+    const int index = axisComboList->currentIndex();
+
+    if(index == -1) return;
+
+    stateList[index] = checked;
+
+    emit axisAttachedStateChanged(index, checked);
+}
+
+
 SeriesSetting::SeriesSetting(QWidget *parent)
     : QScrollArea(parent)
 {
@@ -485,24 +682,39 @@ SeriesSetting::SeriesSetting(QWidget *parent)
     connect(seriesCombo, &QComboBox::currentIndexChanged, stackWidget, &QStackedWidget::setCurrentIndex);
 }
 
-void SeriesSetting::addSeries(QAbstractSeries *series)
+void SeriesSetting::addSeries(QAbstractSeries *series, const QString& name)
 {
     /* 各Seriesが一つもつ設定のためのWidget */
     QWidget *settingWidget = new QWidget(stackWidget);
     QVBoxLayout *layout = new QVBoxLayout(settingWidget);
+
+    /* seriesのaxisのattach/detach設定項目 */
+    QLabel *axisAttachLabel = new QLabel("Attach axis", settingWidget);
+    AxisAttachingList *axisAttachList = new AxisAttachingList(axisListModel);
+    layout->addWidget(axisAttachLabel);
+    layout->addLayout(axisAttachList);
+    auto attachAxis = [this, series](const int index, const bool attached)
+    {
+        if(attached) series->attachAxis(axisList.at(index));
+        else series->detachAxis(axisList.at(index));
+    };
+    connect(axisAttachList, &AxisAttachingList::axisAttachedStateChanged, attachAxis);
 
     /* 共通設定項目 */
     CheckBoxLayout *seriesVisible = new CheckBoxLayout(settingWidget, "Visible", labelWidth);
     LineEditLayout *seriesName = new LineEditLayout(settingWidget, "Name", labelWidth);
     layout->addLayout(seriesVisible);
     layout->addLayout(seriesName);
+    seriesVisible->setChecked(series->isVisible());
     connect(seriesVisible, &CheckBoxLayout::checkBoxToggled, series, &QAbstractSeries::setVisible);
     connect(seriesName, &LineEditLayout::lineTextEdited, series, &QAbstractSeries::setName);
 
+    /* comboへ登録 */
+    static qsizetype seriesCount = 0;
+    seriesCombo->addItem(QString::number(seriesCount++) + "  " + name);
 
     /* 各Seriesの種別特有の設定項目 */
     const QAbstractSeries::SeriesType type = series->type();
-
     switch(type)
     {
     case QAbstractSeries::SeriesTypeScatter:
@@ -811,10 +1023,109 @@ void SeriesSetting::addSeries(QAbstractSeries *series)
     default:
         qDebug() << __FILE__ << __LINE__;
         qDebug() << "Invalid enum index of QAbstractSeries::SeriesType";
-        return;
+        break;
     }
 
+    /* seriesの削除するボタン */
+    PushButtonLayout *removeSeries = new PushButtonLayout(settingWidget, "Remove");
+    layout->addLayout(removeSeries);
+    auto requestRemoveSeries = [this, series](){
+        QWidget *currentWidget = stackWidget->currentWidget();
+        stackWidget->removeWidget(currentWidget);
+        seriesCombo->removeItem(seriesCombo->currentIndex());
+        emit removeSeriesRequested(series);
+    };
+    connect(removeSeries, &PushButtonLayout::buttonReleased, requestRemoveSeries);
+
     stackWidget->addWidget(settingWidget);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+GraphicsItemSetting::GraphicsItemSetting(QWidget *parent)
+    : QScrollArea(parent)
+{
+    /* このスクロールエリア全体のレイアウト */
+    QWidget *contents = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(contents);
+    setWidget(contents);
+    setWidgetResizable(true);
+    contents->setLayout(layout);
+
+    itemCombo = new QComboBox(contents);
+    settingStack = new QStackedWidget(contents);
+    layout->addWidget(itemCombo);
+    layout->addWidget(settingStack);
+
+    connect(itemCombo, &QComboBox::currentIndexChanged, settingStack, &QStackedWidget::setCurrentIndex);
+    connect(settingStack, &QStackedWidget::currentChanged, itemCombo, &QComboBox::setCurrentIndex);
+}
+
+void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
+{
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Text Item");
+
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    LineEditLayout *textEdit = new LineEditLayout(widget, "Text", labelWidth);
+    SpinBoxEditLayout *textSize = new SpinBoxEditLayout(widget, "Size", labelWidth);
+    CheckBoxLayout *textBold = new CheckBoxLayout(widget, "Text bold", labelWidth);
+    CheckBoxLayout *textItaric = new CheckBoxLayout(widget, "Text itaric", labelWidth);
+    LineEditLayout *rotation = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
+    ComboEditLayout *textColor = new ComboEditLayout(widget, "Text color", labelWidth);
+    RGBEditLayout *textColorCustom = new RGBEditLayout(widget, labelWidth);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(textEdit);
+    layout->addLayout(textSize);
+    layout->addLayout(textBold);
+    layout->addLayout(textItaric);
+    layout->addLayout(rotation);
+    layout->addLayout(textColor);
+    layout->addLayout(textColorCustom);
+    layout->addItem(spacer);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        rotation->setLineEditValue(textItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+
+    /* 各項目の初期化 */
+    setThisWidget();
+    textEdit->setLineEditText(textItem->text());
+    textSize->setSpinBoxValue(textItem->font().pointSize());
+    textBold->setChecked(textItem->font().bold());
+    textItaric->setChecked(textItem->font().italic());
+    textColor->insertComboItems(0, colorNameList());
+    textColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    textColorCustom->setColor(textItem->brush().color());
+
+    connect(textItem, &GraphicsTextItem::itemSelected, setThisWidget);
+    connect(textEdit, &LineEditLayout::lineTextEdited, textItem, &GraphicsTextItem::setItemText);
+    connect(textSize, &SpinBoxEditLayout::spinBoxValueChanged, textItem, &GraphicsTextItem::setItemTextSize);
+    connect(textBold, &CheckBoxLayout::checkBoxToggled, textItem, &GraphicsTextItem::setItemTextBold);
+    connect(textItaric, &CheckBoxLayout::checkBoxToggled, textItem, &GraphicsTextItem::setItemTextItaric);
+    connect(rotation, &LineEditLayout::lineValueEdited, textItem, &GraphicsTextItem::setItemRotation);
+    connect(textColor, &ComboEditLayout::currentComboIndexChanged, textColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(textColorCustom, &RGBEditLayout::colorEdited, textItem, &GraphicsTextItem::setItemTextColor);
+}
+
+void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
+{
+
 }
 
 

@@ -37,9 +37,12 @@ public:
     enum class AxisAlign { Left, Right, Bottom, Top };
     enum class SeriesType { Line, Area, Bar, StackedBar, PercentBar, Pie, Scatter, Spline, HorizontalBar, HorizontalStackedBar, HorizontalPercentBar, BoxPlot, Candlestick };
     enum class Theme { Light, BlueCerulean, Dark, BrownSand, BlueNcs, HighContrast, BlueIcy, Qt };
-    enum class MarkerShape { Circle, Rectangle, RotatedRectangle, Triangle, Star, Pentagon };
+    enum class MarkerShape { Circle, Rectangle, RotRectangle, Triangle, Star, Pentagon };
     enum class BarLabelPosition { Center, InsideEnd, InsideBase, OutsideEnd };
     enum class PieLabelPosition { Outsize, InsideHorizontal, InsideTangential, InsizeNormal };
+    enum class LegendAlign { Top, Bottom, Left, Right };
+    enum class LegendMarkerShape { Default, Rectangle, Circle, FromSeries, RotRectangle, Triangle, Star, Pentagon };
+    enum class GraphicsItemType { Text, Line };
 
     Q_ENUM(AxisType)
     Q_ENUM(AxisAlign)
@@ -48,13 +51,18 @@ public:
     Q_ENUM(MarkerShape)
     Q_ENUM(BarLabelPosition)
     Q_ENUM(PieLabelPosition)
+    Q_ENUM(LegendAlign)
+    Q_ENUM(LegendMarkerShape)
+    Q_ENUM(GraphicsItemType)
 
 public:
     QChart* getGraph() const { return this->graph; }
 
 public slots:
     void addAxis(QAbstractAxis *axis, const Graph2D::AxisAlign align);
+    void removeAxis(QAbstractAxis *axis) { graph->removeAxis(axis); }
     void addSeries(QAbstractSeries *series) { graph->addSeries(series); }
+    void removeSeries(QAbstractSeries *series) { graph->removeSeries(series); }
     void setMarginLeft(const QString& lw);
     void setMarginRight(const QString& rw);
     void setMarginBottom(const QString& bh);
