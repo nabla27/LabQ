@@ -1125,7 +1125,195 @@ void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
 
 void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
 {
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Line Item");
 
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    SpinBoxEditLayout *lineWidth = new SpinBoxEditLayout(widget, "Width", labelWidth);
+    LineEditLayout *lineLength = new LineEditLayout(widget, "Length", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *lineAngle = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
+    ComboEditLayout *lineColor = new ComboEditLayout(widget, "Color", labelWidth);
+    RGBEditLayout *lineColorCustom = new RGBEditLayout(widget, labelWidth);
+    ComboEditLayout *lineStyle = new ComboEditLayout(widget, "Style", labelWidth);
+    LineEditLayout *lineStyleCustom = new LineEditLayout(widget, "", labelWidth);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(lineWidth);
+    layout->addLayout(lineLength);
+    layout->addLayout(lineAngle);
+    layout->addLayout(lineColor);
+    layout->addLayout(lineColorCustom);
+    layout->addLayout(lineStyle);
+    layout->addLayout(lineStyleCustom);
+    layout->addItem(spacer);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        lineAngle->setLineEditValue(lineItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+
+    /* 各項目の初期化 */
+    setThisWidget();
+    lineWidth->setSpinBoxValue(lineItem->pen().width());
+    lineLength->setLineEditValue(lineItem->line().length());
+    lineColor->insertComboItems(0, colorNameList());
+    lineColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    lineColorCustom->setColor(lineItem->pen().color());
+    lineStyle->insertComboItems(0, enumToStrings(Graph2D::PenStyle(0)));
+    lineStyle->setComboCurrentIndex(lineItem->pen().style());
+
+    connect(lineItem, &GraphicsLineItem::itemSelected, setThisWidget);
+    connect(lineWidth, &SpinBoxEditLayout::spinBoxValueChanged, lineItem, &GraphicsLineItem::setItemLineWidth);
+    connect(lineLength, &LineEditLayout::lineValueEdited, lineItem, &GraphicsLineItem::setItemLineLength);
+    connect(lineAngle, &LineEditLayout::lineValueEdited, lineItem, &GraphicsLineItem::setItemLineAngle);
+    connect(lineColor, &ComboEditLayout::currentComboIndexChanged, lineColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(lineColorCustom, &RGBEditLayout::colorEdited, lineItem, &GraphicsLineItem::setItemLineColor);
+    connect(lineStyle, &ComboEditLayout::currentComboIndexChanged, lineItem, &GraphicsLineItem::setItemLineStyle);
+    connect(lineStyleCustom, &LineEditLayout::lineTextEdited, lineItem, &GraphicsLineItem::setItemLineStyleCustom);
+}
+
+void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
+{
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Rectangle Item");
+
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    LineEditLayout *rectWidth = new LineEditLayout(widget, "Width", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *rectHeight = new LineEditLayout(widget, "Height", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *rotation = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
+    SpinBoxEditLayout *borderWidth = new SpinBoxEditLayout(widget, "Border width", labelWidth);
+    ComboEditLayout *borderColor = new ComboEditLayout(widget, "Border color", labelWidth);
+    RGBEditLayout *borderColorCustom = new RGBEditLayout(widget, labelWidth);
+    ComboEditLayout *borderStyle = new ComboEditLayout(widget, "Border style", labelWidth);
+    LineEditLayout *borderStyleCustom = new LineEditLayout(widget, "", labelWidth);
+    ComboEditLayout *fillColor = new ComboEditLayout(widget, "Fill color", labelWidth);
+    RGBEditLayout *fillColorCustom = new RGBEditLayout(widget, labelWidth);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(rectWidth);
+    layout->addLayout(rectHeight);
+    layout->addLayout(rotation);
+    layout->addLayout(borderWidth);
+    layout->addLayout(borderColor);
+    layout->addLayout(borderColorCustom);
+    layout->addLayout(borderStyle);
+    layout->addLayout(borderStyleCustom);
+    layout->addLayout(fillColor);
+    layout->addLayout(fillColorCustom);
+    layout->addItem(spacer);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        rotation->setLineEditValue(rectItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+
+    /* 各項目の値の初期化 */
+    setThisWidget();
+    rectWidth->setLineEditValue(rectItem->rect().width());
+    rectHeight->setLineEditValue(rectItem->rect().height());
+    borderWidth->setSpinBoxValue(rectItem->pen().width());
+    borderColor->insertComboItems(0, colorNameList());
+    borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    borderColorCustom->setColor(rectItem->pen().color());
+    borderStyle->insertComboItems(0, enumToStrings(Graph2D::PenStyle(0)));
+    borderStyle->setComboCurrentIndex(rectItem->pen().style());
+    fillColor->insertComboItems(0, colorNameList());
+    fillColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT);
+    fillColorCustom->setColor(rectItem->brush().color());
+
+    connect(rectItem, &GraphicsRectItem::itemSelected, setThisWidget);
+    connect(rectWidth, &LineEditLayout::lineValueEdited, rectItem, &GraphicsRectItem::setItemWidth);
+    connect(rectHeight, &LineEditLayout::lineValueEdited, rectItem, &GraphicsRectItem::setItemHeight);
+    connect(rotation, &LineEditLayout::lineValueEdited, rectItem, &GraphicsRectItem::setItemAngle);
+    connect(borderWidth, &SpinBoxEditLayout::spinBoxValueChanged, rectItem, &GraphicsRectItem::setItemBorderWidth);
+    connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(borderColorCustom, &RGBEditLayout::colorEdited, rectItem, &GraphicsRectItem::setItemBorderColor);
+    connect(borderStyle, &ComboEditLayout::currentComboIndexChanged, rectItem, &GraphicsRectItem::setItemBorderStyle);
+    connect(borderStyleCustom, &LineEditLayout::lineTextEdited, rectItem, &GraphicsRectItem::setItemBorderStyleCustom);
+    connect(fillColor, &ComboEditLayout::currentComboIndexChanged, fillColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(fillColorCustom, &RGBEditLayout::colorEdited, rectItem, &GraphicsRectItem::setItemFillColor);
+}
+
+void GraphicsItemSetting::addEllipseItemSettingWidget(GraphicsEllipseItem *ellipseItem)
+{
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Ellipse Item");
+
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    LineEditLayout *ellipseWidth = new LineEditLayout(widget, "Width", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *ellipseHeight = new LineEditLayout(widget, "Height", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *rotation = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
+    SpinBoxEditLayout *spanAngle = new SpinBoxEditLayout(widget, "Span angle", labelWidth);
+    SpinBoxEditLayout *startAngle = new SpinBoxEditLayout(widget, "Start angle", labelWidth);
+    SpinBoxEditLayout *borderWidth = new SpinBoxEditLayout(widget, "Border width", labelWidth);
+    ComboEditLayout *borderColor = new ComboEditLayout(widget, "Border color", labelWidth);
+    RGBEditLayout *borderColorCustom = new RGBEditLayout(widget, labelWidth);
+    ComboEditLayout *borderStyle = new ComboEditLayout(widget, "Border style", labelWidth);
+    LineEditLayout *borderStyleCustom = new LineEditLayout(widget, "", labelWidth);
+    ComboEditLayout *fillColor = new ComboEditLayout(widget, "Fill color", labelWidth);
+    RGBEditLayout *fillColorCustom = new RGBEditLayout(widget, labelWidth);
+
+    layout->addLayout(ellipseWidth);
+    layout->addLayout(ellipseHeight);
+    layout->addLayout(rotation);
+    layout->addLayout(spanAngle);
+    layout->addLayout(startAngle);
+    layout->addLayout(borderWidth);
+    layout->addLayout(borderColor);
+    layout->addLayout(borderColorCustom);
+    layout->addLayout(borderStyle);
+    layout->addLayout(borderStyleCustom);
+    layout->addLayout(fillColor);
+    layout->addLayout(fillColorCustom);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        rotation->setLineEditValue(ellipseItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+
+    /* 各項目の値を初期化 */
+    setThisWidget();
+    ellipseWidth->setLineEditValue(ellipseItem->rect().width());
+    ellipseHeight->setLineEditValue(ellipseItem->rect().height());
+    spanAngle->setSpinBoxMaxValue(360 * 16);
+    spanAngle->setSpinBoxValue(ellipseItem->spanAngle());
+    startAngle->setSpinBoxMaxValue(360 * 16);
+    startAngle->setSpinBoxValue(ellipseItem->startAngle());
+    borderWidth->setSpinBoxValue(ellipseItem->pen().width());
+    borderColor->insertComboItems(0, colorNameList());
+    borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    borderColorCustom->setColor(ellipseItem->pen().color());
+    borderStyle->insertComboItems(0, enumToStrings(Graph2D::PenStyle(0)));
+    borderStyle->setComboCurrentIndex(ellipseItem->pen().style());
+    fillColor->insertComboItems(0, colorNameList());
+    fillColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    fillColorCustom->setColor(ellipseItem->brush().color());
+
+    connect(ellipseItem, &GraphicsEllipseItem::itemSelected, setThisWidget);
+    connect(ellipseWidth, &LineEditLayout::lineValueEdited, ellipseItem, &GraphicsEllipseItem::setItemWidth);
+    connect(ellipseHeight, &LineEditLayout::lineValueEdited, ellipseItem, &GraphicsEllipseItem::setItemHeight);
+    connect(rotation, &LineEditLayout::lineValueEdited, ellipseItem, &GraphicsEllipseItem::setItemAngle);
+    connect(spanAngle, &SpinBoxEditLayout::spinBoxValueChanged, ellipseItem, &GraphicsEllipseItem::setItemSpanAngle);
+    connect(startAngle, &SpinBoxEditLayout::spinBoxValueChanged, ellipseItem, &GraphicsEllipseItem::setItemStartAngle);
+    connect(borderWidth, &SpinBoxEditLayout::spinBoxValueChanged, ellipseItem, &GraphicsEllipseItem::setItemBorderWidth);
+    connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(borderColorCustom, &RGBEditLayout::colorEdited, ellipseItem, &GraphicsEllipseItem::setItemBorderColor);
+    connect(borderStyle, &ComboEditLayout::currentComboIndexChanged, ellipseItem, &GraphicsEllipseItem::setItemBorderStyle);
+    connect(borderStyleCustom, &LineEditLayout::lineTextEdited, ellipseItem, &GraphicsEllipseItem::setItemBorderStyleCustom);
+    connect(fillColor, &ComboEditLayout::currentComboIndexChanged, fillColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(fillColorCustom, &RGBEditLayout::colorEdited, ellipseItem, &GraphicsEllipseItem::setItemFillColor);
 }
 
 

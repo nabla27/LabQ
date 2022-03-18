@@ -43,6 +43,7 @@ public:
     enum class LegendAlign { Top, Bottom, Left, Right };
     enum class LegendMarkerShape { Default, Rectangle, Circle, FromSeries, RotRectangle, Triangle, Star, Pentagon };
     enum class GraphicsItemType { Text, Line };
+    enum class PenStyle { No, Solid, Dash, Dot, DashDot, DashDotDot, CustomDash };
 
     Q_ENUM(AxisType)
     Q_ENUM(AxisAlign)
@@ -54,6 +55,7 @@ public:
     Q_ENUM(LegendAlign)
     Q_ENUM(LegendMarkerShape)
     Q_ENUM(GraphicsItemType)
+    Q_ENUM(PenStyle)
 
 public:
     QChart* getGraph() const { return this->graph; }

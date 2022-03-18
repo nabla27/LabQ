@@ -21,14 +21,17 @@ public:
 private slots:
     void addTextItem();
     void addLineItem();
+    void addRectItem();
+    void addEllipseItem();
 
 private:
     QMenu *contextMenu;
-    QPoint itemPoint;
 
 signals:
     void textItemAdded(GraphicsTextItem *item);
     void lineItemAdded(GraphicsLineItem *item);
+    void rectItemAdded(GraphicsRectItem *item);
+    void ellipseItemAdded(GraphicsEllipseItem *item);
 };
 
 #endif // CHARTVIEW_H

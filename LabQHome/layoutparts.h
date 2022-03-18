@@ -154,6 +154,7 @@ public:
 public:
     void setLabelMinimumWidth(const int width) { label->setMinimumWidth(width); }
     void setSpinBoxMaximumWidth(const int width) { spinBox->setMaximumWidth(width); }
+    void setSpinBoxMaxValue(const int max) { spinBox->setMaximum(max); }
     int spinBoxValue() const { return spinBox->value(); }
 
 public slots:

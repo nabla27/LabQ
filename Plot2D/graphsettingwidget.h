@@ -225,6 +225,8 @@ public:
 public slots:
     void addTextItemSettingWidget(GraphicsTextItem *textItem);
     void addLineItemSettingWidget(GraphicsLineItem *lineItem);
+    void addRectItemSettingWidget(GraphicsRectItem *rectItem);
+    void addEllipseItemSettingWidget(GraphicsEllipseItem *ellipseItem);
 
 private:
     QComboBox *itemCombo;

@@ -86,6 +86,8 @@ void Plot2D::initializeLayout()
     connect(table, &TableWindow::seriesCreated, graphSetting->seriesSetting, &SeriesSetting::addSeries);
     connect(chartView, &ChartView::textItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addTextItemSettingWidget);
     connect(chartView, &ChartView::lineItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addLineItemSettingWidget);
+    connect(chartView, &ChartView::rectItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addRectItemSettingWidget);
+    connect(chartView, &ChartView::ellipseItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addEllipseItemSettingWidget);
 }
 
 
