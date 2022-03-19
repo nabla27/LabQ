@@ -34,6 +34,8 @@ void GraphicsTextItem::wheelEvent(QGraphicsSceneWheelEvent *event)
         setRotation(rotation() - 2);
     else
         setRotation(rotation() + 2);
+
+    emit itemSelected();
 }
 
 void GraphicsTextItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -60,7 +62,6 @@ void GraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
-    emit itemSelected();
 }
 
 
@@ -126,6 +127,8 @@ void GraphicsLineItem::wheelEvent(QGraphicsSceneWheelEvent *event)
         setRotation(rotation() - 2);
     else
         setRotation(rotation() + 2);
+
+    emit itemSelected();
 }
 
 void GraphicsLineItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -152,7 +155,6 @@ void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsLineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
-    emit itemSelected();
 }
 
 
@@ -225,6 +227,8 @@ void GraphicsRectItem::wheelEvent(QGraphicsSceneWheelEvent *event)
         setRotation(rotation() - 2);
     else
         setRotation(rotation() + 2);
+
+    emit itemSelected();
 }
 
 void GraphicsRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -251,7 +255,6 @@ void GraphicsRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
-    emit itemSelected();
 }
 
 
@@ -326,6 +329,8 @@ void GraphicsEllipseItem::wheelEvent(QGraphicsSceneWheelEvent *event)
         setRotation(rotation() - 2);
     else
         setRotation(rotation() + 2);
+
+    emit itemSelected();
 }
 
 void GraphicsEllipseItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -352,7 +357,155 @@ void GraphicsEllipseItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsEllipseItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
+}
+
+
+
+
+
+
+
+
+
+
+GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF& rect, QGraphicsItem *parent)
+    : QGraphicsPolygonItem(rect, parent)
+{
+    setAcceptHoverEvents(true);
+}
+
+void GraphicsPolygonItem::setItemBorderWidth(const int width)
+{
+    QPen pen = this->pen();
+    pen.setWidth(width);
+    setPen(pen);
+}
+
+void GraphicsPolygonItem::setItemBorderColor(const QColor &color)
+{
+    QPen pen = this->pen();
+    pen.setColor(color);
+    setPen(pen);
+}
+
+void GraphicsPolygonItem::setItemBorderStyle(const int index)
+{
+    QPen pen = this->pen();
+    pen.setStyle(Qt::PenStyle(index));
+    setPen(pen);
+}
+
+void GraphicsPolygonItem::setItemBorderStyleCustom(const QString &style)
+{
+    /* 文字列QStringをダッシュパターンQList<qreal>に変換 */
+    const QStringList strDashPattern = style.split(',', Qt::SplitBehaviorFlags::SkipEmptyParts);
+    QList<qreal> dashPattern;
+    for(const QString& val : strDashPattern) dashPattern << val.toDouble();
+
+    /* ダッシュパターンを設定 */
+    QPen pen = this->pen();
+    pen.setDashPattern(dashPattern);
+    setPen(pen);
+}
+
+void GraphicsPolygonItem::wheelEvent(QGraphicsSceneWheelEvent *event)
+{
+    if(event->delta() > 0)
+        setRotation(rotation() - 2);
+    else
+        setRotation(rotation() + 2);
+
     emit itemSelected();
+}
+
+void GraphicsPolygonItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+}
+
+void GraphicsPolygonItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    setCursor(Qt::ArrowCursor);
+}
+
+void GraphicsPolygonItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::ClosedHandCursor);
+    emit itemSelected();
+}
+
+void GraphicsPolygonItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    setPos(mapToParent(event->pos() - event->buttonDownPos(Qt::LeftButton)));
+}
+
+void GraphicsPolygonItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+GraphicsPixmapItem::GraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem *parent)
+    : QGraphicsPixmapItem(pixmap, parent)
+{
+    setAcceptHoverEvents(true);
+}
+
+void GraphicsPixmapItem::wheelEvent(QGraphicsSceneWheelEvent *event)
+{
+    if(event->buttons() == Qt::LeftButton)
+    {   //左ボタン押しながらホイールで回転
+        if(event->delta() > 0)
+            setRotation(rotation() - 2);
+        else
+            setRotation(rotation() + 2);
+    }
+    else
+    {   //ホイールで拡大・縮小
+        if(event->delta() > 0)
+            setScale(scale() + 0.02);
+        else
+            setScale(scale() - 0.02);
+    }
+
+    emit itemSelected();
+}
+
+void GraphicsPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+}
+
+void GraphicsPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    setCursor(Qt::ArrowCursor);
+}
+
+void GraphicsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::ClosedHandCursor);
+    emit itemSelected();
+}
+
+void GraphicsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    setPos(mapToParent(event->pos() - event->buttonDownPos(Qt::LeftButton)));
+}
+
+void GraphicsPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
 }
 
 

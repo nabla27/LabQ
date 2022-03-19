@@ -23,19 +23,18 @@ void Plot2D::initializeMenuBar()
     QMenuBar *menuBar = new QMenuBar(this);
 
     QMenu *fileMenu = new QMenu("File", menuBar);
+    QAction *importProject = new QAction("Import project", fileMenu);
+    QAction *saveProject = new QAction("Save project", fileMenu);
+    QAction *importDataFile = new QAction("Import data file", fileMenu);
     menuBar->addMenu(fileMenu);
+    fileMenu->addAction(importProject);
+    fileMenu->addAction(saveProject);
+    fileMenu->addAction(importDataFile);
+    connect(importDataFile, &QAction::triggered, table, &TableWindow::readFile);
 
-    QMenu *widgetMenu = new QMenu("Widget", menuBar);
-    menuBar->addMenu(widgetMenu);
-
-    QMenu *addTable = new QMenu("Table", menuBar);
-    QAction *readFile = new QAction("File", addTable);
-    QAction *showTable = new QAction("Table", addTable);
-    menuBar->addMenu(addTable);
-    addTable->addAction(readFile);
-    addTable->addAction(showTable);
-    connect(readFile, &QAction::triggered, table, &TableWindow::readFile);
-    connect(showTable, &QAction::triggered, table, &TableWindow::show);
+    QAction *tableAct = new QAction("Table", menuBar);
+    menuBar->addAction(tableAct);
+    connect(tableAct, &QAction::triggered, table, &TableWindow::show);
 
     setMenuBar(menuBar);
 }
@@ -55,7 +54,7 @@ void Plot2D::initializeLayout()
 
     chart = new Graph2D;
     chartView = new ChartView(chart->getGraph(), centralWidget);
-    graphSetting = new GraphSettingWidget(centralWidget, chart->getGraph());
+    graphSetting = new GraphSettingWidget(centralWidget, chart);
 
     layout->addWidget(chartView);
     layout->addLayout(settingLayout);
@@ -74,13 +73,6 @@ void Plot2D::initializeLayout()
     connect(settingItem, &QComboBox::currentIndexChanged, graphSetting, &GraphSettingWidget::setCurrentIndex);
     connect(graphSetting->axisSetting, &AxisSetting::axisCreated, chart, &Graph2D::addAxis);
     connect(graphSetting->axisSetting, &AxisSetting::removeAxisRequested, chart, &Graph2D::removeAxis);
-    connect(graphSetting->generalSetting, &GeneralSetting::marginLeftSet, chart, &Graph2D::setMarginLeft);
-    connect(graphSetting->generalSetting, &GeneralSetting::marginRightSet, chart, &Graph2D::setMarginRight);
-    connect(graphSetting->generalSetting, &GeneralSetting::marginBottomSet, chart, &Graph2D::setMarginBottom);
-    connect(graphSetting->generalSetting, &GeneralSetting::marginTopSet, chart, &Graph2D::setMarginTop);
-    connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSet, chart, &Graph2D::setGraphTitle);
-    connect(graphSetting->generalSetting, &GeneralSetting::graphTitleSizeSet, chart, &Graph2D::setGraphTitleSize);
-    connect(graphSetting->generalSetting, &GeneralSetting::graphThemeSet, chart, &Graph2D::setGraphTheme);
     connect(graphSetting->seriesSetting, &SeriesSetting::removeSeriesRequested, chart, &Graph2D::removeSeries);
     connect(table, &TableWindow::seriesCreated, chart, &Graph2D::addSeries);
     connect(table, &TableWindow::seriesCreated, graphSetting->seriesSetting, &SeriesSetting::addSeries);
@@ -88,6 +80,8 @@ void Plot2D::initializeLayout()
     connect(chartView, &ChartView::lineItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addLineItemSettingWidget);
     connect(chartView, &ChartView::rectItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addRectItemSettingWidget);
     connect(chartView, &ChartView::ellipseItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addEllipseItemSettingWidget);
+    connect(chartView, &ChartView::polygonItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addPolygonItemSettingWidget);
+    connect(chartView, &ChartView::pixmapItemAdded, graphSetting->graphicsItemSetting, &GraphicsItemSetting::addPixmapItemSettingWidget);
 }
 
 

@@ -4,6 +4,10 @@
 #include <QChartView>
 #include <QMenu>
 #include <QAction>
+#include <QFileDialog>
+#include <QImageReader>
+#include <QImage>
+#include <QLabel>
 #include "graph2d.h"
 #include "graphicsitem.h"
 
@@ -23,6 +27,8 @@ private slots:
     void addLineItem();
     void addRectItem();
     void addEllipseItem();
+    void addPolygonItem();
+    void addPixmapItem();
 
 private:
     QMenu *contextMenu;
@@ -32,6 +38,8 @@ signals:
     void lineItemAdded(GraphicsLineItem *item);
     void rectItemAdded(GraphicsRectItem *item);
     void ellipseItemAdded(GraphicsEllipseItem *item);
+    void polygonItemAdded(GraphicsPolygonItem *item);
+    void pixmapItemAdded(GraphicsPixmapItem *item);
 };
 
 #endif // CHARTVIEW_H

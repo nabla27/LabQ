@@ -29,6 +29,14 @@ void ChartView::initializeContextMenu()
     QAction *addEllipseItem = new QAction("Ellipse", contextMenu);
     contextMenu->addAction(addEllipseItem);
     connect(addEllipseItem, &QAction::triggered, this, &ChartView::addEllipseItem);
+
+    QAction *addPolygonItem = new QAction("Polygon", contextMenu);
+    contextMenu->addAction(addPolygonItem);
+    connect(addPolygonItem, &QAction::triggered, this, &ChartView::addPolygonItem);
+
+    QAction *addPixmapItem = new QAction("Pixmap", contextMenu);
+    contextMenu->addAction(addPixmapItem);
+    connect(addPixmapItem, &QAction::triggered, this, &ChartView::addPixmapItem);
 }
 
 void ChartView::onContextMenuRequest(const QPoint &point)
@@ -70,6 +78,38 @@ void ChartView::addEllipseItem()
 
     emit ellipseItemAdded(ellipseItem);
 }
+
+void ChartView::addPolygonItem()
+{
+    QPolygonF polygon(QList<QPointF>() << QPointF(0, 0) << QPointF(-30, 50) << QPointF(30, 50));
+    GraphicsPolygonItem *polygonItem = new GraphicsPolygonItem(polygon, chart());
+    polygonItem->setPos(mapFromGlobal(cursor().pos()));
+
+    emit polygonItemAdded(polygonItem);
+}
+
+void ChartView::addPixmapItem()
+{
+    /* 読み込むファイルのフォーマットフィルターの作成 */
+    QString formatFilter = "Images (";
+    for(const QByteArray& f : QImageReader::supportedImageFormats())
+        formatFilter += "*." + QString(f.constData()) + " ";
+    formatFilter += ")";
+
+    /* 読み込むファイルのパスを取得 */
+    const QString filePath = QFileDialog::getOpenFileName(this, "", "", formatFilter);
+
+    /* 画像を読み込む */
+    QImage image(filePath);
+    QPixmap pixmap = QPixmap::fromImage(image);
+
+    /* GraphicsItemの生成 */
+    GraphicsPixmapItem *pixmapItem = new GraphicsPixmapItem(pixmap, chart());
+    scene()->addItem(pixmapItem);
+
+    emit pixmapItemAdded(pixmapItem);
+}
+
 
 
 

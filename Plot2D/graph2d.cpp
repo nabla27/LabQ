@@ -3,23 +3,6 @@
 Graph2D::Graph2D()
 {
     graph = new QChart;
-
-#if 0
-    QLineSeries *series = new QLineSeries;
-    QList<QPointF> data =
-    {
-        {1, 2},
-        {2, 3},
-        {3, 1},
-        {4, 2},
-        {5, 3},
-        {6, 6},
-        {7, 5},
-    };
-
-    series->append(data);
-    graph->addSeries(series);
-#endif
 }
 
 Graph2D::~Graph2D()
@@ -88,7 +71,14 @@ void Graph2D::setGraphTitleSize(const int ps)
 
 void Graph2D::setGraphTheme(const int index)
 {
+    //Themeを変更したら下記の項目が初期値に変更されてしまうので、Theme変更前に記憶しておく
+    const QFont titleFont = graph->titleFont();
+    const QFont legendFont = graph->legend()->font();
+
     graph->setTheme(QChart::ChartTheme(index));
+
+    graph->setTitleFont(titleFont);
+    graph->legend()->setFont(legendFont);
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <QStackedWidget>
 #include <QScrollArea>
+#include <QGraphicsScene>
 #include "layoutparts.h"
 #include "graph2d.h"
 #include "utility.h"
@@ -19,7 +20,7 @@ class GraphSettingWidget : public QStackedWidget
     Q_OBJECT
 
 public:
-    GraphSettingWidget(QWidget *parent, QChart *graph);
+    GraphSettingWidget(QWidget *parent, Graph2D *graph);
 
 public:
     GeneralSetting *generalSetting;
@@ -108,27 +109,11 @@ class GeneralSetting : public QScrollArea
     Q_OBJECT
 
 public:
-    GeneralSetting(QWidget *parent);
+    GeneralSetting(QWidget *parent, Graph2D *graph);
 
 private:
     LineEditLayout *pointX;
     LineEditLayout *pointY;
-    QLineEdit *marginLeft;
-    QLineEdit *marginRight;
-    QLineEdit *marginBottom;
-    QLineEdit *marginTop;
-    LineEditLayout *graphTitle;
-    SpinBoxEditLayout *graphTitleSize;
-    ComboEditLayout *graphTheme;
-
-signals:
-    void marginLeftSet(const QString& lw);
-    void marginRightSet(const QString& rw);
-    void marginBottomSet(const QString& bh);
-    void marginTopSet(const QString& th);
-    void graphTitleSet(const QString& title);
-    void graphTitleSizeSet(const int ps);
-    void graphThemeSet(const int index);
 };
 
 
@@ -227,6 +212,11 @@ public slots:
     void addLineItemSettingWidget(GraphicsLineItem *lineItem);
     void addRectItemSettingWidget(GraphicsRectItem *rectItem);
     void addEllipseItemSettingWidget(GraphicsEllipseItem *ellipseItem);
+    void addPolygonItemSettingWidget(GraphicsPolygonItem *polygonItem);
+    void addPixmapItemSettingWidget(GraphicsPixmapItem *pixmapItem);
+
+private:
+    void removeWidgetWithObject(QGraphicsItem *item);
 
 private:
     QComboBox *itemCombo;

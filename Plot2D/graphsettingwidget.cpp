@@ -2,11 +2,11 @@
 
 static const int labelWidth = SETTING_LABEL_WIDTH + 20;
 
-GraphSettingWidget::GraphSettingWidget(QWidget *parent, QChart *graph)
+GraphSettingWidget::GraphSettingWidget(QWidget *parent, Graph2D *graph)
     : QStackedWidget(parent)
 {
-    generalSetting = new GeneralSetting(this);
-    legendSetting = new LegendSetting(this, graph->legend());
+    generalSetting = new GeneralSetting(this, graph);
+    legendSetting = new LegendSetting(this, graph->getGraph()->legend());
     axisSetting = new AxisSetting(this);
     seriesSetting = new SeriesSetting(this);
     graphicsItemSetting = new GraphicsItemSetting(this);
@@ -434,7 +434,7 @@ void AxisSetting::createNewAxis()
 
 
 
-GeneralSetting::GeneralSetting(QWidget *parent)
+GeneralSetting::GeneralSetting(QWidget *parent, Graph2D *graph)
     : QScrollArea(parent)
 {
     /* このスクロールエリア全体のレイアウト */
@@ -449,14 +449,14 @@ GeneralSetting::GeneralSetting(QWidget *parent)
     pointY = new LineEditLayout(contents, "Y:", labelWidth);
     QHBoxLayout *setMarginLayout = new QHBoxLayout;
     QLabel *setMarginLabel = new QLabel("Mergin (L,R,B,T)", contents);
-    marginLeft = new QLineEdit(contents);
-    marginRight = new QLineEdit(contents);
-    marginBottom = new QLineEdit(contents);
-    marginTop = new QLineEdit(contents);
+    QLineEdit *marginLeft = new QLineEdit("0", contents);
+    QLineEdit *marginRight = new QLineEdit("0", contents);
+    QLineEdit *marginBottom = new QLineEdit("0", contents);
+    QLineEdit *marginTop = new QLineEdit("0", contents);
     QSpacerItem *setMarginSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    graphTitle = new LineEditLayout(contents, "Title", labelWidth);
-    graphTitleSize = new SpinBoxEditLayout(contents, "Title size", labelWidth);
-    graphTheme = new ComboEditLayout(contents, "Theme", labelWidth);
+    LineEditLayout *graphTitle = new LineEditLayout(contents, "Title", labelWidth);
+    SpinBoxEditLayout *graphTitleSize = new SpinBoxEditLayout(contents, "Title size", labelWidth);
+    ComboEditLayout *graphTheme = new ComboEditLayout(contents, "Theme", labelWidth);
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     layout->addLayout(pointX);
@@ -480,15 +480,16 @@ GeneralSetting::GeneralSetting(QWidget *parent)
     marginRight->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
     marginBottom->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
     marginTop->setMaximumWidth(SETTING_EDIT_SWIDTH - 12);
+    graphTitleSize->setSpinBoxValue(9);
     graphTheme->insertComboItems(0, enumToStrings(Graph2D::Theme(0)));
 
-    connect(marginLeft, &QLineEdit::textEdited, this, &GeneralSetting::marginLeftSet);
-    connect(marginRight, &QLineEdit::textEdited, this, &GeneralSetting::marginRightSet);
-    connect(marginBottom, &QLineEdit::textEdited, this, &GeneralSetting::marginBottomSet);
-    connect(marginTop, &QLineEdit::textEdited, this, &GeneralSetting::marginTopSet);
-    connect(graphTitle, &LineEditLayout::lineTextEdited, this, &GeneralSetting::graphTitleSet);
-    connect(graphTitleSize, &SpinBoxEditLayout::spinBoxValueChanged, this, &GeneralSetting::graphTitleSizeSet);
-    connect(graphTheme, &ComboEditLayout::currentComboIndexChanged, this, &GeneralSetting::graphThemeSet);
+    connect(marginLeft, &QLineEdit::textEdited, graph, &Graph2D::setMarginLeft);
+    connect(marginRight, &QLineEdit::textEdited, graph, &Graph2D::setMarginRight);
+    connect(marginBottom, &QLineEdit::textEdited, graph, &Graph2D::setMarginBottom);
+    connect(marginTop, &QLineEdit::textEdited, graph, &Graph2D::setMarginTop);
+    connect(graphTitle, &LineEditLayout::lineTextEdited, graph, &Graph2D::setGraphTitle);
+    connect(graphTitleSize, &SpinBoxEditLayout::spinBoxValueChanged, graph, &Graph2D::setGraphTitleSize);
+    connect(graphTheme, &ComboEditLayout::currentComboIndexChanged, graph, &Graph2D::setGraphTheme);
 }
 
 
@@ -628,6 +629,10 @@ AxisAttachingList::AxisAttachingList(QAbstractItemModel *model, QWidget *parent)
     axisComboList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     axisComboList->setModel(model);
     attach->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+    //StateListのサイズをmodel(ComboBox)のサイズと合わせる
+    //seriesが追加される前にAxisが追加された場合に必要。それ以降が下のシグナル&スロットで必要に応じて追加・削除される
+    while(model->rowCount() > stateList.count()) addStateListIndex();
 
     connect(model, &QAbstractItemModel::rowsAboutToBeInserted, this, &AxisAttachingList::addStateListIndex);
     connect(model, &QAbstractItemModel::rowsRemoved, this, &AxisAttachingList::removeStateList);
@@ -1070,6 +1075,16 @@ GraphicsItemSetting::GraphicsItemSetting(QWidget *parent)
     connect(settingStack, &QStackedWidget::currentChanged, itemCombo, &QComboBox::setCurrentIndex);
 }
 
+void GraphicsItemSetting::removeWidgetWithObject(QGraphicsItem *item)
+{
+    /* 各SettingStack内のWidgetから呼び出される */
+    /* 削除したいアイテムの設定ページ(Widget)が選択されていることが前提 */
+    const int currentIndex = itemCombo->currentIndex();         //stackWidget削除時にインデックスが変更されるため、先にcomboのインデックスを取得しておく。
+    settingStack->removeWidget(settingStack->currentWidget());  //設定ページStackWidgetから削除
+    itemCombo->removeItem(currentIndex);                        //アイテム一覧Comboから削除
+    item->scene()->removeItem(item);                            //グラフからGraphicsItemを削除
+}
+
 void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
 {
     itemCombo->addItem(QString::number(itemCount++) + "  " + "Text Item");
@@ -1086,6 +1101,8 @@ void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
     LineEditLayout *rotation = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
     ComboEditLayout *textColor = new ComboEditLayout(widget, "Text color", labelWidth);
     RGBEditLayout *textColorCustom = new RGBEditLayout(widget, labelWidth);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     layout->addLayout(textEdit);
@@ -1095,6 +1112,8 @@ void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
     layout->addLayout(rotation);
     layout->addLayout(textColor);
     layout->addLayout(textColorCustom);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
     layout->addItem(spacer);
 
     /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
@@ -1102,6 +1121,8 @@ void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
         rotation->setLineEditValue(textItem->rotation());
         settingStack->setCurrentWidget(widget);
     };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [textItem, this]() { removeWidgetWithObject(textItem); };
 
     /* 各項目の初期化 */
     setThisWidget();
@@ -1121,6 +1142,7 @@ void GraphicsItemSetting::addTextItemSettingWidget(GraphicsTextItem *textItem)
     connect(rotation, &LineEditLayout::lineValueEdited, textItem, &GraphicsTextItem::setItemRotation);
     connect(textColor, &ComboEditLayout::currentComboIndexChanged, textColorCustom, &RGBEditLayout::setColorAndEditable);
     connect(textColorCustom, &RGBEditLayout::colorEdited, textItem, &GraphicsTextItem::setItemTextColor);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
 }
 
 void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
@@ -1139,6 +1161,8 @@ void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
     RGBEditLayout *lineColorCustom = new RGBEditLayout(widget, labelWidth);
     ComboEditLayout *lineStyle = new ComboEditLayout(widget, "Style", labelWidth);
     LineEditLayout *lineStyleCustom = new LineEditLayout(widget, "", labelWidth);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     layout->addLayout(lineWidth);
@@ -1148,6 +1172,8 @@ void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
     layout->addLayout(lineColorCustom);
     layout->addLayout(lineStyle);
     layout->addLayout(lineStyleCustom);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
     layout->addItem(spacer);
 
     /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
@@ -1155,6 +1181,8 @@ void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
         lineAngle->setLineEditValue(lineItem->rotation());
         settingStack->setCurrentWidget(widget);
     };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [lineItem, this]() { removeWidgetWithObject(lineItem); };
 
     /* 各項目の初期化 */
     setThisWidget();
@@ -1174,6 +1202,7 @@ void GraphicsItemSetting::addLineItemSettingWidget(GraphicsLineItem *lineItem)
     connect(lineColorCustom, &RGBEditLayout::colorEdited, lineItem, &GraphicsLineItem::setItemLineColor);
     connect(lineStyle, &ComboEditLayout::currentComboIndexChanged, lineItem, &GraphicsLineItem::setItemLineStyle);
     connect(lineStyleCustom, &LineEditLayout::lineTextEdited, lineItem, &GraphicsLineItem::setItemLineStyleCustom);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
 }
 
 void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
@@ -1195,6 +1224,8 @@ void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
     LineEditLayout *borderStyleCustom = new LineEditLayout(widget, "", labelWidth);
     ComboEditLayout *fillColor = new ComboEditLayout(widget, "Fill color", labelWidth);
     RGBEditLayout *fillColorCustom = new RGBEditLayout(widget, labelWidth);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     layout->addLayout(rectWidth);
@@ -1207,6 +1238,8 @@ void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
     layout->addLayout(borderStyleCustom);
     layout->addLayout(fillColor);
     layout->addLayout(fillColorCustom);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
     layout->addItem(spacer);
 
     /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
@@ -1214,6 +1247,8 @@ void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
         rotation->setLineEditValue(rectItem->rotation());
         settingStack->setCurrentWidget(widget);
     };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [rectItem, this]() { removeWidgetWithObject(rectItem); };
 
     /* 各項目の値の初期化 */
     setThisWidget();
@@ -1226,7 +1261,7 @@ void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
     borderStyle->insertComboItems(0, enumToStrings(Graph2D::PenStyle(0)));
     borderStyle->setComboCurrentIndex(rectItem->pen().style());
     fillColor->insertComboItems(0, colorNameList());
-    fillColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT);
+    fillColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
     fillColorCustom->setColor(rectItem->brush().color());
 
     connect(rectItem, &GraphicsRectItem::itemSelected, setThisWidget);
@@ -1240,6 +1275,7 @@ void GraphicsItemSetting::addRectItemSettingWidget(GraphicsRectItem *rectItem)
     connect(borderStyleCustom, &LineEditLayout::lineTextEdited, rectItem, &GraphicsRectItem::setItemBorderStyleCustom);
     connect(fillColor, &ComboEditLayout::currentComboIndexChanged, fillColorCustom, &RGBEditLayout::setColorAndEditable);
     connect(fillColorCustom, &RGBEditLayout::colorEdited, rectItem, &GraphicsRectItem::setItemFillColor);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
 }
 
 void GraphicsItemSetting::addEllipseItemSettingWidget(GraphicsEllipseItem *ellipseItem)
@@ -1263,6 +1299,9 @@ void GraphicsItemSetting::addEllipseItemSettingWidget(GraphicsEllipseItem *ellip
     LineEditLayout *borderStyleCustom = new LineEditLayout(widget, "", labelWidth);
     ComboEditLayout *fillColor = new ComboEditLayout(widget, "Fill color", labelWidth);
     RGBEditLayout *fillColorCustom = new RGBEditLayout(widget, labelWidth);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     layout->addLayout(ellipseWidth);
     layout->addLayout(ellipseHeight);
@@ -1276,12 +1315,17 @@ void GraphicsItemSetting::addEllipseItemSettingWidget(GraphicsEllipseItem *ellip
     layout->addLayout(borderStyleCustom);
     layout->addLayout(fillColor);
     layout->addLayout(fillColorCustom);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
+    layout->addItem(spacer);
 
     /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
     auto setThisWidget = [=](){
         rotation->setLineEditValue(ellipseItem->rotation());
         settingStack->setCurrentWidget(widget);
     };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [ellipseItem, this]() { removeWidgetWithObject(ellipseItem); };
 
     /* 各項目の値を初期化 */
     setThisWidget();
@@ -1314,7 +1358,174 @@ void GraphicsItemSetting::addEllipseItemSettingWidget(GraphicsEllipseItem *ellip
     connect(borderStyleCustom, &LineEditLayout::lineTextEdited, ellipseItem, &GraphicsEllipseItem::setItemBorderStyleCustom);
     connect(fillColor, &ComboEditLayout::currentComboIndexChanged, fillColorCustom, &RGBEditLayout::setColorAndEditable);
     connect(fillColorCustom, &RGBEditLayout::colorEdited, ellipseItem, &GraphicsEllipseItem::setItemFillColor);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
 }
+
+void GraphicsItemSetting::addPolygonItemSettingWidget(GraphicsPolygonItem *polygonItem)
+{
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Polygon Item");
+
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    QHBoxLayout *point1Layout = new QHBoxLayout;
+    QLabel *x1Label = new QLabel("X1", widget);
+    QLineEdit *x1Edit = new QLineEdit(widget);
+    QLabel *y1Label = new QLabel("Y1", widget);
+    QLineEdit *y1Edit = new QLineEdit(widget);
+    QHBoxLayout *point2Layout = new QHBoxLayout;
+    QLabel *x2Label = new QLabel("X2", widget);
+    QLineEdit *x2Edit = new QLineEdit(widget);
+    QLabel *y2Label = new QLabel("Y2", widget);
+    QLineEdit *y2Edit = new QLineEdit(widget);
+    LineEditLayout *rotation = new LineEditLayout(widget, "Rotation", labelWidth, SETTING_EDIT_SWIDTH);
+    SpinBoxEditLayout *borderWidth = new SpinBoxEditLayout(widget, "Border width", labelWidth);
+    ComboEditLayout *borderColor = new ComboEditLayout(widget, "Border color", labelWidth);
+    RGBEditLayout *borderColorCustom = new RGBEditLayout(widget, labelWidth);
+    ComboEditLayout *borderStyle = new ComboEditLayout(widget, "Border style", labelWidth);
+    LineEditLayout *borderStyleCustom = new LineEditLayout(widget, "", labelWidth);
+    ComboEditLayout *fillColor = new ComboEditLayout(widget, "Fill color", labelWidth);
+    RGBEditLayout *fillColorCustom = new RGBEditLayout(widget, labelWidth);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(point1Layout);
+    point1Layout->addWidget(x1Label);
+    point1Layout->addWidget(x1Edit);
+    point1Layout->addWidget(y1Label);
+    point1Layout->addWidget(y1Edit);
+    layout->addLayout(point2Layout);
+    point2Layout->addWidget(x2Label);
+    point2Layout->addWidget(x2Edit);
+    point2Layout->addWidget(y2Label);
+    point2Layout->addWidget(y2Edit);
+    layout->addLayout(rotation);
+    layout->addLayout(borderWidth);
+    layout->addLayout(borderColor);
+    layout->addLayout(borderColorCustom);
+    layout->addLayout(borderStyle);
+    layout->addLayout(borderStyleCustom);
+    layout->addLayout(fillColor);
+    layout->addLayout(fillColorCustom);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
+    layout->addItem(spacer);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        rotation->setLineEditValue(polygonItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [polygonItem, this]() { removeWidgetWithObject(polygonItem); };
+
+    /* 各項目の値の初期化 */
+    setThisWidget();
+    x1Edit->setText("-30");
+    y1Edit->setText("50");
+    x2Edit->setText("30");
+    y2Edit->setText("50");
+    borderWidth->setSpinBoxValue(polygonItem->pen().width());
+    borderColor->insertComboItems(0, colorNameList());
+    borderColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    borderColorCustom->setColor(polygonItem->pen().color());
+    borderStyle->insertComboItems(0, enumToStrings(Graph2D::PenStyle(0)));
+    borderStyle->setComboCurrentIndex(polygonItem->pen().style());
+    fillColor->insertComboItems(0, colorNameList());
+    fillColor->setComboCurrentIndex(QT_GLOBAL_COLOR_COUNT + 1);
+    fillColorCustom->setColor(polygonItem->brush().color());
+
+    auto setPolygon = [=]()
+    {
+        QPointF p1(0, 0);
+        QPointF p2(x1Edit->text().toDouble(), y1Edit->text().toDouble());
+        QPointF p3(x2Edit->text().toDouble(), y2Edit->text().toDouble());
+        polygonItem->setPolygon(QPolygonF(QList<QPointF>() << p1 << p2 << p3));
+    };
+
+    connect(polygonItem, &GraphicsPolygonItem::itemSelected, setThisWidget);
+    connect(x1Edit, &QLineEdit::textEdited, setPolygon);
+    connect(y1Edit, &QLineEdit::textEdited, setPolygon);
+    connect(x2Edit, &QLineEdit::textEdited, setPolygon);
+    connect(y2Edit, &QLineEdit::textEdited, setPolygon);
+    connect(borderWidth, &SpinBoxEditLayout::spinBoxValueChanged, polygonItem, &GraphicsPolygonItem::setItemBorderWidth);
+    connect(rotation, &LineEditLayout::lineValueEdited, polygonItem, &GraphicsPolygonItem::setItemRotation);
+    connect(borderColor, &ComboEditLayout::currentComboIndexChanged, borderColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(borderColorCustom, &RGBEditLayout::colorEdited, polygonItem, &GraphicsPolygonItem::setItemBorderColor);
+    connect(borderStyle, &ComboEditLayout::currentComboIndexChanged, polygonItem, &GraphicsPolygonItem::setItemBorderStyle);
+    connect(borderStyleCustom, &LineEditLayout::lineTextEdited, polygonItem, &GraphicsPolygonItem::setItemBorderStyleCustom);
+    connect(fillColor, &ComboEditLayout::currentComboIndexChanged, fillColorCustom, &RGBEditLayout::setColorAndEditable);
+    connect(fillColorCustom, &RGBEditLayout::colorEdited, polygonItem, &GraphicsPolygonItem::setItemFillColor);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
+}
+
+
+
+
+
+
+
+
+
+void GraphicsItemSetting::addPixmapItemSettingWidget(GraphicsPixmapItem *pixmapItem)
+{
+    itemCombo->addItem(QString::number(itemCount++) + "  " + "Pixmap Item");
+
+    QWidget *widget = new QWidget(settingStack);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    widget->setLayout(layout);
+    settingStack->addWidget(widget);
+
+    QHBoxLayout *originalSizeLayout = new QHBoxLayout;
+    QLabel *originalSizeLabel = new QLabel("Original Size [W:H]", widget);
+    QLineEdit *originalSizeWEdit = new QLineEdit(QString::number(pixmapItem->pixmap().width()), widget);
+    QLineEdit *originalSizeHEdit = new QLineEdit(QString::number(pixmapItem->pixmap().height()), widget);
+    QSpacerItem *originalSizeSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    LineEditLayout *scale = new LineEditLayout(widget, "Scale", labelWidth, SETTING_EDIT_SWIDTH);
+    LineEditLayout *rotation = new LineEditLayout(widget, "Rotaion", labelWidth, SETTING_EDIT_SWIDTH);
+    BlankSpaceLayout *blankSpace = new BlankSpaceLayout(0, 20);
+    PushButtonLayout *removeButton = new PushButtonLayout(widget, "Remove");
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+    layout->addLayout(originalSizeLayout);
+    originalSizeLayout->addWidget(originalSizeLabel);
+    originalSizeLayout->addWidget(originalSizeWEdit);
+    originalSizeLayout->addWidget(originalSizeHEdit);
+    originalSizeLayout->addItem(originalSizeSpacer);
+    layout->addLayout(scale);
+    layout->addLayout(rotation);
+    layout->addLayout(blankSpace);
+    layout->addLayout(removeButton);
+    layout->addItem(spacer);
+
+    /* アイテムが選択された時に呼び出される。各Itemの値を設定し、settingStackとitemComboを現在のアイテムに切り替える */
+    auto setThisWidget = [=](){
+        scale->setLineEditValue(pixmapItem->scale());
+        rotation->setLineEditValue(pixmapItem->rotation());
+        settingStack->setCurrentWidget(widget);
+    };
+    /* 削除ボタンで呼び出し */
+    auto removeThisItem = [pixmapItem, this]() { removeWidgetWithObject(pixmapItem); };
+
+    /* 各項目の値の初期化 */
+    setThisWidget();
+    originalSizeLabel->setMinimumWidth(labelWidth);
+    originalSizeWEdit->setReadOnly(true);
+    originalSizeWEdit->setMaximumWidth(SETTING_EDIT_SWIDTH);
+    originalSizeHEdit->setReadOnly(true);
+    originalSizeHEdit->setMaximumWidth(SETTING_EDIT_SWIDTH);
+
+    connect(pixmapItem, &GraphicsPixmapItem::itemSelected, setThisWidget);
+    connect(scale, &LineEditLayout::lineValueEdited, pixmapItem, &GraphicsPixmapItem::setItemScale);
+    connect(rotation, &LineEditLayout::lineValueEdited, pixmapItem, &GraphicsPixmapItem::setItemRotation);
+    connect(removeButton, &PushButtonLayout::buttonReleased, removeThisItem);
+}
+
+
+
 
 
 

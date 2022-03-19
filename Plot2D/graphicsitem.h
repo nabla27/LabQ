@@ -152,6 +152,73 @@ signals:
 
 
 
+class GraphicsPolygonItem : public QObject, public QGraphicsPolygonItem
+{
+    Q_OBJECT
+
+public:
+    GraphicsPolygonItem(const QPolygonF& polygon, QGraphicsItem *parent = nullptr);
+
+public:
+    void setItemRotation(const qreal& angle) { setRotation(angle); }
+    void setItemBorderWidth(const int width);
+    void setItemBorderColor(const QColor& color);
+    void setItemBorderStyle(const int index);
+    void setItemBorderStyleCustom(const QString& style);
+    void setItemFillColor(const QColor& color) { setBrush(color); }
+
+protected:
+    void wheelEvent(QGraphicsSceneWheelEvent *event) override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+
+signals:
+    void itemSelected();
+};
+
+
+
+
+
+
+
+
+
+
+class GraphicsPixmapItem : public QObject, public QGraphicsPixmapItem
+{
+    Q_OBJECT
+
+public:
+    GraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem *parent = nullptr);
+
+public slots:
+    void setItemScale(const qreal& scale) { setScale(scale); }
+    void setItemRotation(const qreal& angle) { setRotation(angle); }
+
+
+protected:
+    void wheelEvent(QGraphicsSceneWheelEvent *event) override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+
+signals:
+    void itemSelected();
+};
+
+
+
+
+
+
+
+
 
 
 
