@@ -37,7 +37,7 @@ protected slots:
     void insertColRight();
     void reverseRow();
     void reverseCol();
-    void transpose();
+    void transposeCell();
 };
 
 

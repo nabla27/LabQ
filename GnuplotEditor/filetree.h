@@ -30,6 +30,7 @@ public:
     ScriptInfo(QProcess *process = nullptr, TextEdit *editor = nullptr)
         : process(process), editor(editor) {}
     ~ScriptInfo() {
+        process->close();
         delete process; process = nullptr;
         delete editor; editor = nullptr;
     }
@@ -122,7 +123,7 @@ private slots:
     void onCustomContextMenu(const QPoint& point);
 
 private:
-    QString folderPath = QDir::currentPath() + "/" + BasicSet::tmpDirectory;
+    QString folderPath;
     QTreeWidgetItem *scriptTree;
     QTreeWidgetItem *sheetTree;
     QTreeWidgetItem *otherTree;

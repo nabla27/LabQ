@@ -1,388 +1,117 @@
 #include "gnuplottable.h"
 
+
 GnuplotTable::GnuplotTable(QWidget *parent)
-    : QTableWidget(parent)
+    : TableWidget(parent)
 {
-    {//プロセスの初期化
-        process = new QProcess(this);
-    }
-    {//ショートカットキーの登録
-        scCtrC = new QShortcut(QKeySequence("Ctrl+C"), this);
-        scCtrV = new QShortcut(QKeySequence("Ctrl+V"), this);
-        scCtrX = new QShortcut(QKeySequence("Ctrl+X"), this);
-        connect(scCtrC, &QShortcut::activated, this, &GnuplotTable::copyCell);
-        connect(scCtrV, &QShortcut::activated, this, &GnuplotTable::pasteCell);
-        connect(scCtrX, &QShortcut::activated, this, &GnuplotTable::cutCell);
-    }
-    {//contextMenuの設定
-        setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(this, &GnuplotTable::customContextMenuRequested,
-                this, &GnuplotTable::onCustomContextMenu);
-        normalMenu = new QMenu(this);
-        /* copy */
-        QAction *actCopy = new QAction("copy", normalMenu);
-        normalMenu->addAction(actCopy);
-        connect(actCopy, &QAction::triggered, this, &GnuplotTable::copyCell);
-        /* cut */
-        QAction *actCut = new QAction("cut", normalMenu);
-        normalMenu->addAction(actCut);
-        connect(actCut, &QAction::triggered, this, &GnuplotTable::cutCell);
-        /* paste */
-        QAction *actPaste = new QAction("paste", normalMenu);
-        normalMenu->addAction(actPaste);
-        connect(actPaste, &QAction::triggered, this, &GnuplotTable::pasteCell);
-        /* delete */
-        QAction *actDelete = new QAction("delete", normalMenu);
-        normalMenu->addAction(actDelete);
-        connect(actDelete, &QAction::triggered, this, &GnuplotTable::deleteCell);
-        /* insert */
-        QMenu *insertMenu = new QMenu(normalMenu);
-        insertMenu->setTitle("insert");
-        QAction *actInsertRowUp = new QAction("row (up)", insertMenu);
-        QAction *actInsertRowDw = new QAction("row (down)", insertMenu);
-        QAction *actInsertColLf = new QAction("col (left)", insertMenu);
-        QAction *actInsertColRg = new QAction("col (right)", insertMenu);
-        insertMenu->addAction(actInsertRowUp);
-        insertMenu->addAction(actInsertRowDw);
-        insertMenu->addAction(actInsertColLf);
-        insertMenu->addAction(actInsertColRg);
-        connect(actInsertRowUp, &QAction::triggered, this, &GnuplotTable::insertRowUp);
-        connect(actInsertRowDw, &QAction::triggered, this, &GnuplotTable::insertRowDown);
-        connect(actInsertColLf, &QAction::triggered, this, &GnuplotTable::insertColLeft);
-        connect(actInsertColRg, &QAction::triggered, this, &GnuplotTable::insertColRight);
-        normalMenu->addMenu(insertMenu);
-        /* placement */
-        QMenu *placementMenu = new QMenu(normalMenu);
-        placementMenu->setTitle("placement");
-        QAction *actReverseRow = new QAction("reverse row", placementMenu);
-        QAction *actReverseCol = new QAction("reverse col", placementMenu);
-        placementMenu->addAction(actReverseRow);
-        placementMenu->addAction(actReverseCol);
-        connect(actReverseRow, &QAction::triggered, this, &GnuplotTable::reverseRow);
-        connect(actReverseCol, &QAction::triggered, this, &GnuplotTable::reverseCol);
-        normalMenu->addMenu(placementMenu);
-        /* gnuplot */
-        QMenu *gnuplotMenu = new QMenu(normalMenu);
-        gnuplotMenu->setTitle("gnuplot");
-        QAction *actPlot = new QAction("plot", gnuplotMenu);
-        QAction *actPlotClip = new QAction("clipboard", gnuplotMenu);
-        gnuplotMenu->addAction(actPlot);
-        gnuplotMenu->addAction(actPlotClip);
-        connect(actPlot, &QAction::triggered, this, &GnuplotTable::plot);
-        connect(actPlotClip, &QAction::triggered, this, &GnuplotTable::gnuplotClip);
-        normalMenu->addMenu(gnuplotMenu);
-        /* visualize */
-        QMenu *visualizeMenu = new QMenu(normalMenu);
-        visualizeMenu->setTitle("visualize");
-        QAction *act3DBar = new QAction("3Dbar");
-        QAction *act3DScatter = new QAction("3Dscatter");
-        visualizeMenu->addAction(act3DBar);
-        visualizeMenu->addAction(act3DScatter);
-        connect(act3DBar, &QAction::triggered, this, &GnuplotTable::visualize3DBar);
-        connect(act3DScatter, &QAction::triggered, this, &GnuplotTable::visualize3DScatter);
-        /* export */
-        QMenu *exportMenu = new QMenu(normalMenu);
-        exportMenu->setTitle("export");
-        QAction *actLatexCode = new QAction("latex code", exportMenu);
-        exportMenu->addAction(actLatexCode);
-        connect(actLatexCode, &QAction::triggered, this, &GnuplotTable::toLatexCode);
-        normalMenu->addMenu(exportMenu);
-    }
+    process = new QProcess(this);
+
+    scCtrC = new QShortcut(QKeySequence("Ctrl+C"), this);
+    scCtrV = new QShortcut(QKeySequence("Ctrl+V"), this);
+    scCtrX = new QShortcut(QKeySequence("Ctrl+X"), this);
+    connect(scCtrC, &QShortcut::activated, this, &GnuplotTable::copyCell);
+    connect(scCtrV, &QShortcut::activated, this, &GnuplotTable::pasteCell);
+    connect(scCtrX, &QShortcut::activated, this, &GnuplotTable::cutCell);
+
+    /* contextMenu初期化 */
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &GnuplotTable::customContextMenuRequested, this, &GnuplotTable::onCustomContextMenu);
+    initializeContextMenu();
 }
 
 GnuplotTable::~GnuplotTable()
 {
-    delete process;
     delete normalMenu;
     delete scCtrC;
     delete scCtrV;
     delete scCtrX;
+
+    process->close();
+    delete process;
 }
 
-
-
-//######################
-// データのセットと取得
-//######################
-/* tableにデータをセット */
-template <>
-void GnuplotTable::setData(const QList<QList<QString> >& data)
-{
-    this->clear();                                                               //セットされていた*itemはdeleteされる
-    for(int row = 0; row < data.size(); ++row)
-    {
-        if(row >= rowCount()) { insertRow(rowCount()); }                         //行が足りなかったら足す
-        for(int col = 0; col < data.at(row).size(); ++col)
-        {
-            if(col >= columnCount()) { insertColumn(columnCount()); }            //列が足りなかったら足す
-            QTableWidgetItem *item = new QTableWidgetItem(data.at(row).at(col));
-            setItem(row, col, item);                                             //アイテムをセット
-        }
-    }
-}
-
-/* table全体のデータを取得 */
-template <>
-QList<QList<QString> > GnuplotTable::getData() const
-{
-    const int rows = rowCount();
-    const int cols = columnCount();
-    QList<QList<QString> > data(rows, QList<QString>(cols));
-
-    for(int row = 0; row < rows; ++row){
-        for(int col = 0; col < cols; ++col){
-            //item()はQTableWidgetItem*がセットされていなかったり、インデックスが範囲外であればエラー(nullptr)
-            data[row][col] = (item(row, col) != nullptr) ? item(row, col)->text() : "";
-        }
-    }
-
-    return data;
-}
-
-/* tableの選択されているデータを取得 */
-template<>
-QList<QList<QList<float> > > GnuplotTable::selectedData() const
-{
-    /* 選択されれるセルの範囲を取得 */
-    const QList<QTableWidgetSelectionRange> selectedRangeList = selectedRanges();
-    /* 戻り値 */
-    QList<QList<QList<float> > > list(selectedRangeList.size());
-
-    /* 選択された範囲をループ */
-    qsizetype index = 0;
-    for(const QTableWidgetSelectionRange& selected : selectedRangeList)
-    {
-        const int startRow = selected.topRow();
-        const int startCol = selected.leftColumn();
-        const int endRow = selected.bottomRow();
-        const int endCol = selected.rightColumn();
-
-        list[index] = QList<QList<float> >(endRow - startRow + 1, QList<float>(endCol - startCol + 1));
-
-        for(int row = startRow; row <= endRow; ++row){
-            for(int col = startCol; col <= endCol; ++col){
-                list[index][row - startRow][col - startCol] =
-                        (item(row, col) != nullptr) ? item(row, col)->text().toFloat() : NULL;
-            }
-        }
-        index++;
-    }
-
-    return list;
-}
-
-
-
-
-//####################
-// スロット関数
-//####################
-/* 右クリックによるcontextMenuの表示 */
 void GnuplotTable::onCustomContextMenu(const QPoint& point)
 {
-    normalMenu->exec(viewport()->mapToGlobal(point));
+    normalMenu->exec(mapToGlobal(point));
 }
 
-/* コピー */
-void GnuplotTable::copyCell()
+void GnuplotTable::initializeContextMenu()
 {
-    /* tableの情報を取得 */
-    const QAbstractItemModel *model = this->model();                //table全体の値の情報
-    const QItemSelectionModel *selection = this->selectionModel();  //選択された部分の情報
+    if(normalMenu) delete normalMenu;
 
-    QModelIndexList indexes = selection->selectedIndexes();         //選択されたセルのインデックス
+    normalMenu = new QMenu(this);
 
-    if(indexes.count() == 0) { return; }                            //選択されたインデックスがなければ何もしない
+    /* copy */
+    QAction *actCopy = new QAction("copy", normalMenu);
+    normalMenu->addAction(actCopy);
+    connect(actCopy, &QAction::triggered, this, &GnuplotTable::copyCell);
 
-    std::sort(indexes.begin(), indexes.end());                      //並び替え
+    /* cut */
+    QAction *actCut = new QAction("cut", normalMenu);
+    normalMenu->addAction(actCut);
+    connect(actCut, &QAction::triggered, this, &GnuplotTable::cutCell);
 
-    QString clip;
-    QModelIndex previous = indexes.first();
-    indexes.removeFirst();
-    clip.append(model->data(previous).toString());
+    /* paste */
+    QAction *actPaste = new QAction("paste", normalMenu);
+    normalMenu->addAction(actPaste);
+    connect(actPaste, &QAction::triggered, this, &GnuplotTable::pasteCell);
 
-    foreach(const QModelIndex &current, indexes)                    //行、列と捜査していく
-    {
-        if(current.row() != previous.row())
-            clip.append("\n");
-        else
-            clip.append("\t");                                      //列の区切りはタブ幅にする
+    /* claer */
+    QAction *actDelete = new QAction("delete", normalMenu);
+    normalMenu->addAction(actDelete);
+    connect(actDelete, &QAction::triggered, this, &GnuplotTable::clearCell);
 
-        clip.append(model->data(current).toString());
-        previous = current;
-    }
+    /* insert */
+    QMenu *insertMenu = new QMenu(normalMenu);
+    insertMenu->setTitle("insert");
+    QAction *actInsertRowUp = new QAction("row (up)", insertMenu);
+    QAction *actInsertRowDw = new QAction("row (down)", insertMenu);
+    QAction *actInsertColLf = new QAction("col (left)", insertMenu);
+    QAction *actInsertColRg = new QAction("col (right)", insertMenu);
+    insertMenu->addAction(actInsertRowUp);
+    insertMenu->addAction(actInsertRowDw);
+    insertMenu->addAction(actInsertColLf);
+    insertMenu->addAction(actInsertColRg);
+    connect(actInsertRowUp, &QAction::triggered, this, &GnuplotTable::insertRowUp);
+    connect(actInsertRowDw, &QAction::triggered, this, &GnuplotTable::insertRowDown);
+    connect(actInsertColLf, &QAction::triggered, this, &GnuplotTable::insertColLeft);
+    connect(actInsertColRg, &QAction::triggered, this, &GnuplotTable::insertColRight);
+    normalMenu->addMenu(insertMenu);
 
-    QApplication::clipboard()->setText(clip);                       //クリップボードに貼り付ける
+    /* placement */
+    QMenu *placementMenu = new QMenu(normalMenu);
+    placementMenu->setTitle("placement");
+    QAction *actReverseRow = new QAction("reverse row", placementMenu);
+    QAction *actReverseCol = new QAction("reverse col", placementMenu);
+    QAction *actTranspose = new QAction("transpose", placementMenu);
+    placementMenu->addAction(actReverseRow);
+    placementMenu->addAction(actReverseCol);
+    placementMenu->addAction(actTranspose);
+    connect(actReverseRow, &QAction::triggered, this, &GnuplotTable::reverseRow);
+    connect(actReverseCol, &QAction::triggered, this, &GnuplotTable::reverseCol);
+    connect(actTranspose, &QAction::triggered, this, &GnuplotTable::transposeCell);
+    normalMenu->addMenu(placementMenu);
+
+    /* gnuplot */
+    QMenu *gnuplotMenu = new QMenu(normalMenu);
+    gnuplotMenu->setTitle("gnuplot");
+    QAction *actPlot = new QAction("plot", gnuplotMenu);
+    QAction *actPlotClip = new QAction("clipboard", gnuplotMenu);
+    gnuplotMenu->addAction(actPlot);
+    gnuplotMenu->addAction(actPlotClip);
+    connect(actPlot, &QAction::triggered, this, &GnuplotTable::plot);
+    connect(actPlotClip, &QAction::triggered, this, &GnuplotTable::gnuplotClip);
+    normalMenu->addMenu(gnuplotMenu);
+
+    /* export */
+    QMenu *exportMenu = new QMenu(normalMenu);
+    exportMenu->setTitle("export");
+    QAction *actLatexCode = new QAction("latex code", exportMenu);
+    exportMenu->addAction(actLatexCode);
+    connect(actLatexCode, &QAction::triggered, this, &GnuplotTable::toLatexCode);
+    normalMenu->addMenu(exportMenu);
 }
 
-/* カット */
-void GnuplotTable::cutCell()
-{
-    this->copyCell();
-    this->deleteCell();
-}
-
-/* ペースト */
-void GnuplotTable::pasteCell()
-{
-    /* 選択された行と列のインデックスを取得 */
-    const QList<QTableWidgetSelectionRange> selectedRangeList = selectedRanges();
-
-    /* クリップボードを読み取る */
-    const QStringList rowStrList = QApplication::clipboard()->text().split("\n");
-
-    /* 各選択範囲にペースト */
-    for(const QTableWidgetSelectionRange& selected : selectedRangeList)
-    {
-        const int pasteRow = selected.topRow();            //ペースト開始点の行数
-        const int pasteCol = selected.leftColumn();        //ペースト開始点の列数
-
-        for(int row = 0; row < rowStrList.size(); ++row)
-        {
-            const QStringList colStrList = rowStrList.at(row).split(QRegularExpression("\\t| ")); //タブまたは空白区切りでセルにペースト
-            if(pasteRow + row >= rowCount()) { insertRow(rowCount()); }                           //行数が足りない場合は追加
-
-            for(int col = 0; col < colStrList.size(); ++col)
-            {
-                if(pasteCol + col >= columnCount()) { insertColumn(columnCount()); }              //列数が足りない場合は追加
-                if(item(pasteRow + row, pasteCol + col) == nullptr){                              //QTableWidgetItemがセットされているか確認
-                    QTableWidgetItem *item = new QTableWidgetItem(colStrList.at(col));
-                    setItem(pasteRow + row, pasteCol + col, item);
-                }
-                else
-                    item(pasteRow + row, pasteCol + col)->setText(colStrList.at(col));
-            }
-        }
-    }
-}
-
-/* 選択されたセルの削除 */
-void GnuplotTable::deleteCell()
-{
-    /* 選択された範囲を取得 */
-    const QList<QTableWidgetSelectionRange> selectedRangeList = selectedRanges();
-
-    /* 各選択された範囲を削除 */
-    for(const QTableWidgetSelectionRange& selected : selectedRangeList)
-    {
-        const int startRow = selected.topRow();         //選択されたセルの開始行
-        const int startCol = selected.leftColumn();     //選択されたセルの開始列
-        const int endRow = selected.bottomRow();        //選択されたセルの終了行
-        const int endCol = selected.rightColumn();      //選択されたセルの終了列
-
-        for(int row = startRow; row <= endRow; ++row){
-            for(int col = startCol; col <= endCol; ++col)
-            {
-                if(item(row, col) != nullptr)           //QTableWidgetItem*がセットされているか
-                    item(row, col)->setText("");
-            }
-        }
-    }
-}
-
-/* 選択されたセルの上に行を追加 */
-void GnuplotTable::insertRowUp()
-{
-    insertRow(currentIndex().row());
-}
-
-/* 選択されたセルの下に行を追加 */
-void GnuplotTable::insertRowDown()
-{
-    insertRow(currentIndex().row() + 1);
-}
-
-/* 選択されたセルの左に列を追加 */
-void GnuplotTable::insertColLeft()
-{
-    insertColumn(currentIndex().column());
-}
-
-/* 選択されたセルの右に列を追加 */
-void GnuplotTable::insertColRight()
-{
-    insertColumn(currentIndex().column() + 1);
-}
-
-/* 選択された範囲の行を上下対称に入れ替える */
-void GnuplotTable::reverseRow()
-{
-    /* 選択された範囲を取得 */
-    const QList<QTableWidgetSelectionRange> selectedRangeList = selectedRanges();
-
-    /* 各選択された範囲 */
-    for(const QTableWidgetSelectionRange& selected : selectedRangeList)
-    {
-        const int startRow = selected.topRow();      //選択された範囲の開始行
-        const int startCol = selected.leftColumn();  //選択された範囲の開始列
-        const int endRow = selected.bottomRow();     //選択された範囲の終了行
-        const int endCol = selected.rightColumn();   //選択された範囲の終了列
-
-        /* 選択された範囲の中央行 */
-        const int middleRow = (endRow - startRow) / 2;
-
-        /* 入れ替え */
-        for(int row = 0; row <= middleRow; ++row){
-            for(int col = startCol; col <= endCol; ++col)
-            {
-                if(item(startRow + row, col) == nullptr){                   //セルにQTableWidgetItem*がセットされていなかったらセット
-                    QTableWidgetItem *topItem = new QTableWidgetItem("");
-                    setItem(startRow + row, col, topItem);
-                }
-                if(item(endRow - row, col) == nullptr){                     //セルにQTableWidgetItem*がセットされていなかったらセット
-                    QTableWidgetItem *btmItem = new QTableWidgetItem("");
-                    setItem(endRow - row, col, btmItem);
-                }
-
-                const QString topText = item(startRow + row, col)->text();
-                const QString btmText = item(endRow - row, col)->text();
-                item(startRow + row, col)->setText(btmText);
-                item(endRow - row, col)->setText(topText);
-            }
-        }
-    }
-}
-
-/* 選択された範囲のセルを左右対称に入れ替える */
-void GnuplotTable::reverseCol()
-{
-    /* 選択された範囲を取得 */
-    const QList<QTableWidgetSelectionRange> selectedRangeList = selectedRanges();
-
-    /* 各選択された範囲 */
-    for(const QTableWidgetSelectionRange& selected : selectedRangeList)
-    {
-        const int startRow = selected.topRow();      //選択された範囲の開始行
-        const int startCol = selected.leftColumn();  //選択された範囲の開始列
-        const int endRow = selected.bottomRow();     //選択された範囲の終了行
-        const int endCol = selected.rightColumn();   //選択された範囲の終了列
-
-        /* 選択された範囲の中央列 */
-        const int middleCol = (endCol - startCol) / 2;
-
-        /* 入れ替え */
-        for(int row = startRow; row <= endRow; ++row){
-            for(int col = 0; col <= middleCol; ++col)
-            {
-                if(item(row, startCol + col) == nullptr){
-                    QTableWidgetItem *leftItem = new QTableWidgetItem("");
-                    setItem(row, startCol + col, leftItem);
-                }
-                if(item(row, endCol - col) == nullptr){
-                    QTableWidgetItem *rightItem = new QTableWidgetItem("");
-                    setItem(row, endCol - col, rightItem);
-                }
-
-                const QString leftText = item(row, startCol + col)->text();
-                const QString rightText = item(row, endCol - col)->text();
-                item(row, startCol + col)->setText(rightText);
-                item(row, endCol - col)->setText(leftText);
-            }
-        }
-    }
-}
-
-/* gnuplotでplot */
 void GnuplotTable::plot()
 {
     /* gnuplotが初期化されていなかったら(=nullptr)無効 */
@@ -432,7 +161,6 @@ void GnuplotTable::plot()
     gnuplot->exc(process, QList<QString>() << "reset\n" << cmd);
 }
 
-/* 選択された範囲を表すgnuplotコマンドをクリップボードに貼り付ける */
 void GnuplotTable::gnuplotClip()
 {
     /* 選択された範囲 */
@@ -463,19 +191,6 @@ void GnuplotTable::gnuplotClip()
     QApplication::clipboard()->setText(cmd);
 }
 
-
-void GnuplotTable::visualize3DBar()
-{
-
-}
-
-
-void GnuplotTable::visualize3DScatter()
-{
-
-}
-
-/* 選択された範囲のセルを表として描画するlatexコードをクリップボードに貼り付け */
 void GnuplotTable::toLatexCode()
 {
     /* 選択された範囲を取得 */
@@ -521,4 +236,43 @@ void GnuplotTable::toLatexCode()
     /* クリップボードに貼り付け */
     QApplication::clipboard()->setText(clip);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

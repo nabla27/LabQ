@@ -235,7 +235,7 @@ void TableWidget::reverseCol()
     }
 }
 
-void TableWidget::transpose()
+void TableWidget::transposeCell()
 {
     const QList<QTableWidgetSelectionRange> ranges = selectedRanges();
 
