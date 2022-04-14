@@ -49,6 +49,20 @@ inline QString readFileTxt(const QString& fileName)
     return "\0";
 }
 
+inline bool readFileTxt(const QString& fileName, QString& text)
+{
+    QFile file(fileName);
+
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QTextStream in(&file);
+        text = in.readAll();
+        return true;
+    }
+    else
+        return false;
+}
+
 inline QList<QList<QString> > readFileCsv(const QString& fileName)
 {
     const QString data = readFileTxt(fileName);  //ファイルの内容(text)をQString型で保持

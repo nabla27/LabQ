@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+<file alias="icon/icon_play.png">E:/repos/qt_project/LabQ/Plot3D/icon/icon_play.png</file>
+<file alias="icon/icon_stop.png">E:/repos/qt_project/LabQ/Plot3D/icon/icon_stop.png</file>
+</qresource>
+</RCC>
