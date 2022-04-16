@@ -33,6 +33,8 @@ void Graphics3D::initializeLayout()
     managerWidget->addTab(componentManager, "Component");
 
     managerWidget->setFixedWidth(300);
+
+    connect(componentManager, &ComponentManager::componentAdded, scene3d, &Scene3D::addComponent);
 }
 
 

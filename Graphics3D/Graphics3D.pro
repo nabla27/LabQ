@@ -38,3 +38,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome
+
+include(itemsettingwidget/itemsettingwidget.pri)
