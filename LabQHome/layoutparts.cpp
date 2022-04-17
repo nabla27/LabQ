@@ -226,13 +226,148 @@ void VerticalDragBar::mouseMoveEvent(QMouseEvent *event)
 
 
 
+namespace mlayout
+{
+
+Layout3DParam::Layout3DParam(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    QLabel *labelX = new QLabel("X", parent);
+    QLabel *labelY = new QLabel("Y", parent);
+    QLabel *labelZ = new QLabel("Z", parent);
+    editX = new QLineEdit(parent);
+    editY = new QLineEdit(parent);
+    editZ = new QLineEdit(parent);
+
+    addWidget(label);
+    addWidget(labelX);
+    addWidget(editX);
+    addWidget(labelY);
+    addWidget(editY);
+    addWidget(labelZ);
+    addWidget(editZ);
+
+    label->setFixedWidth(labelWidth);
+    const int editorWidth = 40;
+    editX->setFixedWidth(editorWidth);
+    editY->setFixedWidth(editorWidth);
+    editZ->setFixedWidth(editorWidth);
+
+    connect(editX, &QLineEdit::editingFinished, this, &Layout3DParam::emitXEdited);
+    connect(editY, &QLineEdit::editingFinished, this, &Layout3DParam::emitYEdited);
+    connect(editZ, &QLineEdit::editingFinished, this, &Layout3DParam::emitZEdited);
+}
+
+void Layout3DParam::setV3Value(const QVector3D& vec)
+{
+    editX->setText(QString::number(vec.x()));
+    editY->setText(QString::number(vec.y()));
+    editZ->setText(QString::number(vec.z()));
+}
+
+void Layout3DParam::setQuaternionValue(const QQuaternion& qut)
+{
+    editX->setText(QString::number(qut.x()));
+    editY->setText(QString::number(qut.y()));
+    editZ->setText(QString::number(qut.z()));
+}
+
+void Layout3DParam::emitXEdited()
+{
+    emit xEdited(editX->text().toFloat());
+    emit xyzEditedVector(QVector3D(editX->text().toFloat(), editY->text().toFloat(), editZ->text().toFloat()));
+    QQuaternion quaternion;
+    quaternion.setVector(editX->text().toFloat(), editY->text().toFloat(), editZ->text().toFloat());
+    emit xyzEditedQuaternion(quaternion);
+}
+void Layout3DParam::emitYEdited()
+{
+    emit yEdited(editY->text().toFloat());
+    emit xyzEditedVector(QVector3D(editX->text().toFloat(), editY->text().toFloat(), editZ->text().toFloat()));
+    QQuaternion quaternion;
+    quaternion.setVector(editX->text().toFloat(), editY->text().toFloat(), editZ->text().toFloat());
+    emit xyzEditedQuaternion(quaternion);
+}
+void Layout3DParam::emitZEdited()
+{
+    emit zEdited(editZ->text().toFloat());
+    emit xyzEditedVector(QVector3D(editX->text().toFloat(), editY->text().toFloat(), editZ->text().toFloat()));
+    QQuaternion quaternion;
+    quaternion.setVector(editX->text().toFloat(), editZ->text().toFloat(),  editZ->text().toFloat());
+    emit xyzEditedQuaternion(quaternion);
+}
+
+
+
+Layout1DParam::Layout1DParam(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    editor = new QLineEdit(parent);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    addWidget(label);
+    addWidget(editor);
+    addItem(spacer);
+
+    label->setFixedWidth(labelWidth);
+
+    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    connect(editor, &QLineEdit::editingFinished, this, &Layout1DParam::emitEdited);
+}
+
+
+ColorButtonLayout::ColorButtonLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    button = new QPushButton(parent);
+
+    addWidget(label);
+    addWidget(button);
+
+    label->setFixedWidth(labelWidth);
+    button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    button->setAutoFillBackground(true);
+
+    dialog = new QColorDialog(parent);
+
+    connect(button, &QPushButton::released, dialog, &QColorDialog::exec);
+    connect(dialog, &QColorDialog::currentColorChanged, this, &ColorButtonLayout::emitColorChanging);
+}
+
+void ColorButtonLayout::emitColorChanging(const QColor& color)
+{
+    button->setText(color.name());
+
+    QPalette palette = button->palette();
+    palette.setColor(QPalette::ColorRole::Button, color);
+    button->setPalette(palette);
+
+    emit colorChanged(color);
+}
+
+
+
+
+DoubleSbLayout::DoubleSbLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    spinBox = new QDoubleSpinBox(parent);
+
+    addWidget(label);
+    addWidget(spinBox);
+
+    label->setFixedWidth(labelWidth);
+    spinBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    connect(spinBox, &QDoubleSpinBox::valueChanged, this, &DoubleSbLayout::valueChanged);
+}
 
 
 
 
 
-
-
+}// namespace mlayout
 
 
 

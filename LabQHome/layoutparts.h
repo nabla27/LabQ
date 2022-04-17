@@ -16,6 +16,9 @@
 #include <QPushButton>
 #include <QMouseEvent>
 #include <QDateTime>
+#include <QQuaternion>
+#include <QColorDialog>
+#include <QDoubleSpinBox>
 
 #define SETTING_EDIT_LWIDTH 110
 #define SETTING_EDIT_SWIDTH 35
@@ -296,6 +299,110 @@ signals:
 
 
 
+namespace mlayout
+{
+
+
+class Layout3DParam : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit Layout3DParam(const QString& name, QWidget *parent, const int labelWidth = 80);
+
+public slots:
+    void setV3Value(const QVector3D& vec);
+    void setQuaternionValue(const QQuaternion& qut);
+    void setX(const float& val) { editX->setText(QString::number(val)); }
+    void setY(const float& val) { editY->setText(QString::number(val)); }
+    void setZ(const float& val) { editZ->setText(QString::number(val)); }
+
+private:
+    QLineEdit *editX;
+    QLineEdit *editY;
+    QLineEdit *editZ;
+
+private slots:
+    void emitXEdited();
+    void emitYEdited();
+    void emitZEdited();
+
+signals:
+    void xEdited(const float& val);
+    void yEdited(const float& val);
+    void zEdited(const float& val);
+    void xyzEditedVector(const QVector3D& vec);
+    void xyzEditedQuaternion(const QQuaternion& qut);
+};
+
+
+
+
+
+class Layout1DParam : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit Layout1DParam(const QString& name, QWidget *parent, const int labelWidth = 100);
+
+public slots:
+    void setValue(const float& val) { editor->setText(QString::number(val)); }
+
+private:
+    QLineEdit *editor;
+
+private slots:
+    void emitEdited() { emit edited(editor->text().toFloat()); }
+
+signals:
+    void edited(const float& val);
+};
+
+
+
+class ColorButtonLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit ColorButtonLayout(const QString& name, QWidget *parent, const int labelWidth = 100);
+
+public:
+    QColor getColor() const { return dialog->currentColor(); }
+
+public slots:
+    void setColor(const QColor& color) { dialog->setCurrentColor(color); }
+
+private slots:
+    void emitColorChanging(const QColor& color);
+
+private:
+    QPushButton *button;
+    QColorDialog *dialog;
+
+signals:
+    void colorChanged(const QColor& color);
+};
+
+
+
+
+class DoubleSbLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit DoubleSbLayout(const QString& name, QWidget *parent, const int labelWidth);
+    void setSpinBoxMaxValue(const double max) { spinBox->setMaximum(max); }
+    void setSpinBoxMinValue(const double min) { spinBox->setMinimum(min); }
+    double value() { return spinBox->value(); }
+
+public slots:
+    void setValue(const double& value) { spinBox->setValue(value); }
+
+private:
+    QDoubleSpinBox *spinBox;
+
+signals:
+    void valueChanged(const double& value);
+};
 
 
 
@@ -311,5 +418,6 @@ signals:
 
 
 
+} // namespace mlayout
 
 #endif // LAYOUTPARTS_H

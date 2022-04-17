@@ -11,6 +11,8 @@
 #include "transformsettingwidget.h"
 #include "materialsettingwidget.h"
 
+class TorusMeshSettingWidget;
+
 class TorusSettingWidget : public QWidget
 {
     Q_OBJECT
@@ -28,12 +30,21 @@ private:
     QPushButton *transformButton;
     TransformSettingWidget *transformSettingWidget;
     QPushButton *meshButton;
-    QWidget *meshSettingWidget;
+    TorusMeshSettingWidget *meshSettingWidget;
     QPushButton *materialButton;
-    QWidget *materialSettingWidget;
+    MaterialSettingWidget *materialSettingWidget;
 
 signals:
 
+};
+
+
+class TorusMeshSettingWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit TorusMeshSettingWidget(Qt3DExtras::QTorusMesh *mesh, QWidget *parent);
+    void changeVisible() { setVisible(!isVisible()); }
 };
 
 #endif // TORUSSETTINGWIDGET_H
