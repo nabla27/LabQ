@@ -406,6 +406,26 @@ PushButtonLayout::PushButtonLayout(const QString& name, QWidget *parent, const i
 
 
 
+
+
+CheckBoxLayout::CheckBoxLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    checkBox = new QCheckBox(parent);
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    addWidget(label);
+    addWidget(checkBox);
+    addItem(spacer);
+
+    label->setFixedWidth(labelWidth);
+
+    connect(checkBox, &QCheckBox::clicked, this, &CheckBoxLayout::clicked);
+}
+
+
+
+
 }// namespace mlayout
 
 

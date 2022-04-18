@@ -447,6 +447,22 @@ signals:
 
 
 
+class CheckBoxLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit CheckBoxLayout(const QString& name, QWidget *parent, const int labelWidth);
+    void setChecked(const bool checked) { checkBox->setChecked(checked); }
+
+private:
+    QCheckBox *checkBox;
+
+signals:
+    void clicked(const bool checked);
+};
+
+
+
 
 
 

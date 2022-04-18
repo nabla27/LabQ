@@ -6,8 +6,8 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <Qt3DCore/QEntity>
-#include "itemsettingwidget/basicmeshsettingwidget.h"
-#include "itemsettingwidget/basicshapesettingwidget.h"
+#include "itemsettingwidget/basic_mesh_setting_widget.h"
+#include "itemsettingwidget/basic_shape_setting_widget.h"
 
 class ComponentManager : public QScrollArea
 {
