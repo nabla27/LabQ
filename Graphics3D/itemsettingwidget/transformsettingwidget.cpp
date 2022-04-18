@@ -10,6 +10,7 @@ TransformSettingWidget::TransformSettingWidget(Qt3DCore::QTransform *transform,
     mlayout::Layout3DParam *rotation = new mlayout::Layout3DParam("Rotation", this);
     mlayout::Layout3DParam *scale = new mlayout::Layout3DParam("Scale", this);
     mlayout::PushButtonLayout *matrixButton = new mlayout::PushButtonLayout("Matrix", this, 100);
+    TransformMatrixWidget *matrixWidget = new TransformMatrixWidget(this);
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     setLayout(vLayout);
@@ -17,21 +18,22 @@ TransformSettingWidget::TransformSettingWidget(Qt3DCore::QTransform *transform,
     vLayout->addLayout(rotation);
     vLayout->addLayout(scale);
     vLayout->addLayout(matrixButton);
-    TransformMatrixWidget *w = new TransformMatrixWidget;
-    vLayout->addWidget(w);
-    w->hide();
-    connect(matrixButton, &mlayout::PushButtonLayout::released, w, &TransformMatrixWidget::show);
+    vLayout->addWidget(matrixWidget);
     vLayout->addItem(spacer);
 
     position->setV3Value(transform->translation());
     rotation->setQuaternionValue(transform->rotation());
     scale->setV3Value(transform->scale3D());
+    matrixWidget->setMatrix(transform->matrix());
+    matrixWidget->setVisible(false);
 
     connect(position, &mlayout::Layout3DParam::xyzEditedVector, transform, &Qt3DCore::QTransform::setTranslation);
     connect(rotation, &mlayout::Layout3DParam::xEdited, transform, &Qt3DCore::QTransform::setRotationX);
     connect(rotation, &mlayout::Layout3DParam::yEdited, transform, &Qt3DCore::QTransform::setRotationY);
     connect(rotation, &mlayout::Layout3DParam::zEdited, transform, &Qt3DCore::QTransform::setRotationZ);
     connect(scale, &mlayout::Layout3DParam::xyzEditedVector, transform, &Qt3DCore::QTransform::setScale3D);
+    connect(matrixButton, &mlayout::PushButtonLayout::released, matrixWidget, &TransformMatrixWidget::changeVisible);
+    connect(matrixWidget, &TransformMatrixWidget::matrixChanged, transform, &Qt3DCore::QTransform::setMatrix);
 
     connect(transform, &Qt3DCore::QTransform::rotationXChanged, rotation, &mlayout::Layout3DParam::setX);
     connect(transform, &Qt3DCore::QTransform::rotationYChanged, rotation, &mlayout::Layout3DParam::setY);
@@ -45,103 +47,50 @@ TransformSettingWidget::TransformSettingWidget(Qt3DCore::QTransform *transform,
 
 
 
-TransformMatrixWidget::TransformMatrixWidget()
+TransformMatrixWidget::TransformMatrixWidget(QWidget *parent)
+    : QWidget(parent)
 {
     QVBoxLayout *vLayout = new QVBoxLayout(this);
-    QHBoxLayout *r1Layout = new QHBoxLayout(this);
-    QLabel *r1Label = new QLabel("", this);
-    QLineEdit *c11 = new QLineEdit(this);
-    QLineEdit *c12 = new QLineEdit(this);
-    QLineEdit *c13 = new QLineEdit(this);
-    QLineEdit *c14 = new QLineEdit(this);
 
-    QHBoxLayout *r2Layout = new QHBoxLayout(this);
-    QLabel *r2Label = new QLabel("", this);
-    QLineEdit *c21 = new QLineEdit(this);
-    QLineEdit *c22 = new QLineEdit(this);
-    QLineEdit *c23 = new QLineEdit(this);
-    QLineEdit *c24 = new QLineEdit(this);
+    cell.resize(4);
 
-    QHBoxLayout *r3Layout = new QHBoxLayout(this);
-    QLabel *r3Label = new QLabel("", this);
-    QLineEdit *c31 = new QLineEdit(this);
-    QLineEdit *c32 = new QLineEdit(this);
-    QLineEdit *c33 = new QLineEdit(this);
-    QLineEdit *c34 = new QLineEdit(this);
+    for(size_t i = 0; i < 4; ++i)
+    {
+        QHBoxLayout *hLayout = new QHBoxLayout;
+        QLabel *label = new QLabel("", this);
+        vLayout->addLayout(hLayout);
+        hLayout->addWidget(label);
 
-    QHBoxLayout *r4Layout = new QHBoxLayout(this);
-    QLabel *r4Label = new QLabel("", this);
-    QLineEdit *c41 = new QLineEdit(this);
-    QLineEdit *c42 = new QLineEdit(this);
-    QLineEdit *c43 = new QLineEdit(this);
-    QLineEdit *c44 = new QLineEdit(this);
+        cell[i].resize(4);
 
-    vLayout->addLayout(r1Layout);
-    vLayout->addLayout(r2Layout);
-    vLayout->addLayout(r3Layout);
-    vLayout->addLayout(r4Layout);
-    r1Layout->addWidget(r1Label);
-    r1Layout->addWidget(c11);
-    r1Layout->addWidget(c12);
-    r1Layout->addWidget(c13);
-    r1Layout->addWidget(c14);
-    r2Layout->addWidget(r2Label);
-    r2Layout->addWidget(c21);
-    r2Layout->addWidget(c22);
-    r2Layout->addWidget(c23);
-    r2Layout->addWidget(c24);
-    r3Layout->addWidget(r3Label);
-    r3Layout->addWidget(c31);
-    r3Layout->addWidget(c32);
-    r3Layout->addWidget(c33);
-    r3Layout->addWidget(c34);
-    r4Layout->addWidget(r4Label);
-    r4Layout->addWidget(c41);
-    r4Layout->addWidget(c42);
-    r4Layout->addWidget(c43);
-    r4Layout->addWidget(c44);
+        for(size_t j = 0; j < 4; ++j)
+        {
+            cell[i][j] = new QLineEdit(this);
+            hLayout->addWidget(cell.at(i).at(j));
+            connect(cell[i][j], &QLineEdit::editingFinished, this, &TransformMatrixWidget::emitMatrixChanging);
+        }
 
-    r1Label->setFixedWidth(100);
-    r2Label->setFixedWidth(100);
-    r3Label->setFixedWidth(100);
-    r4Label->setFixedWidth(100);
+        label->setFixedWidth(100);
+    }
 
-    //r1Layout->setContentsMargins(0, 0, 0, 0);
-    //r2Layout->setContentsMargins(0, 0, 0, 0);
-    //r3Layout->setContentsMargins(0, 0, 0, 0);
-    //r4Layout->setContentsMargins(0, 0, 0, 0);
-
+    setLayout(vLayout);
     vLayout->setContentsMargins(0, 0, 0, 0);
-    //connect(table, &QTableWidget::itemChanged, this, &TransformMatrixWidget::emitMatrixChanging);
 }
 
 void TransformMatrixWidget::setMatrix(const QMatrix4x4 &matrix)
 {
-    for(size_t i = 0; i < 4; ++i){
-        for(size_t j = 0; j < 4; ++j)
-        {
-            QTableWidgetItem *item = table->item(i, j);
-            if(item) item->setText(QString::number(matrix(i, j)));
-            else
-            {
-                item = new QTableWidgetItem(QString::number(matrix(i, j)));
-                table->setItem(i, j, item);
-            }
-        }
-    }
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            cell.at(i).at(j)->setText(QString::number(matrix(i, j)));
 }
 
 void TransformMatrixWidget::emitMatrixChanging()
 {
     QMatrix4x4 matrix;
 
-    for(size_t i = 0; i < 4; ++i){
-        for(size_t j = 0; j < 4; ++j)
-        {
-            QTableWidgetItem *item = table->item(i, j);
-            if(item) matrix(i, j) = item->text().toFloat();
-        }
-    }
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            matrix(i, j) = cell.at(i).at(j)->text().toFloat();
 
     emit matrixChanged(matrix);
 }

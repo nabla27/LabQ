@@ -25,15 +25,15 @@ class TransformMatrixWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TransformMatrixWidget();
-    ~TransformMatrixWidget() {}
+    explicit TransformMatrixWidget(QWidget *parent);
     void setMatrix(const QMatrix4x4& matrix);
+    void changeVisible() { setVisible(!isVisible()); }
 
 private:
     void emitMatrixChanging();
 
 private:
-    QTableWidget *table;
+    QList<QList<QLineEdit*> > cell;
 
 signals:
     void matrixChanged(const QMatrix4x4& matrix);

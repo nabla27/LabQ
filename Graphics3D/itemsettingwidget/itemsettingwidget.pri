@@ -1,9 +1,11 @@
 HEADERS += \
+    $$PWD/basicmeshsettingwidget.h \
+    $$PWD/basicshapesettingwidget.h \
     $$PWD/materialsettingwidget.h \
-    $$PWD/torussettingwidget.h \
     $$PWD/transformsettingwidget.h
 
 SOURCES += \
+    $$PWD/basicmeshsettingwidget.cpp \
+    $$PWD/basicshapesettingwidget.cpp \
     $$PWD/materialsettingwidget.cpp \
-    $$PWD/torussettingwidget.cpp \
     $$PWD/transformsettingwidget.cpp

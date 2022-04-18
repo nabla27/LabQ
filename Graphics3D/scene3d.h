@@ -9,6 +9,10 @@
 #include <Qt3DExtras/QTorusMesh>
 #include <Qt3DExtras/QSphereMesh>
 #include <Qt3DExtras/QOrbitCameraController>
+#include <Qt3DExtras/QFirstPersonCameraController>
+
+#include <Qt3DExtras/QPlaneGeometry>
+#include <Qt3DExtras/QPlaneMesh>
 
 class Scene3D : public Qt3DExtras::Qt3DWindow
 {
@@ -23,6 +27,7 @@ private:
     Qt3DCore::QEntity *rootEntity;
     Qt3DRender::QCamera *cameraEntity;
     Qt3DExtras::QOrbitCameraController *camController;
+    //Qt3DExtras::QFirstPersonCameraController *camController;
 };
 
 #endif // SCENE3D_H

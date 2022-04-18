@@ -36,8 +36,9 @@ class MaterialSettingWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MaterialSettingWidget(Qt3DRender::QMaterial *material,
-                                   QWidget *parent);
+    explicit MaterialSettingWidget(Qt3DRender::QMaterial *material, QWidget *parent);
+    void changeVisible() { setVisible(!isVisible()); }
+
 private slots:
     void changeMaterial(const int index);
 

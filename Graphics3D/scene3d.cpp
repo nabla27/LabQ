@@ -14,6 +14,11 @@ Scene3D::Scene3D()
     camController->setLinearSpeed( 50.0f );
     camController->setLookSpeed( 180.0f );
     camController->setCamera(cameraEntity);
+
+    //camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
+    //camController->setLinearSpeed(50.0f);
+    //camController->setLookSpeed(180.0f);
+    //camController->setCamera(cameraEntity);
 }
 
 Scene3D::~Scene3D()

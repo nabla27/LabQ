@@ -6,7 +6,8 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <Qt3DCore/QEntity>
-#include "itemsettingwidget/torussettingwidget.h"
+#include "itemsettingwidget/basicmeshsettingwidget.h"
+#include "itemsettingwidget/basicshapesettingwidget.h"
 
 class ComponentManager : public QScrollArea
 {
@@ -18,7 +19,9 @@ private:
     void initializeAddComponentMenu();
 
 private slots:
+    void requestBasicShape(Qt3DRender::QGeometryRenderer *mesh, QWidget *meshWidget);
     void requestBasicShapeTorus();
+    void requestBasicShapePlane();
 
 private:
     QPushButton *addComponentButton;
