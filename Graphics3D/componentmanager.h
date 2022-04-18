@@ -1,6 +1,6 @@
 #ifndef COMPONENTMANAGER_H
 #define COMPONENTMANAGER_H
-#include <QWidget>
+#include <QScrollArea>
 #include <QStackedWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -8,7 +8,7 @@
 #include <Qt3DCore/QEntity>
 #include "itemsettingwidget/torussettingwidget.h"
 
-class ComponentManager : public QWidget
+class ComponentManager : public QScrollArea
 {
     Q_OBJECT
 public:

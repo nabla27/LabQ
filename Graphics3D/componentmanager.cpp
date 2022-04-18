@@ -1,7 +1,7 @@
 #include "componentmanager.h"
 
 ComponentManager::ComponentManager(QWidget *parent)
-    : QWidget(parent)
+    : QScrollArea(parent)
 {
     QVBoxLayout *vLayout = new QVBoxLayout;
     addComponentButton = new QPushButton(this);

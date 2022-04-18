@@ -367,6 +367,45 @@ DoubleSbLayout::DoubleSbLayout(const QString& name, QWidget *parent, const int l
 
 
 
+
+
+
+ComboBoxLayout::ComboBoxLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    combo = new QComboBox(parent);
+
+    addWidget(label);
+    addWidget(combo);
+
+    label->setFixedWidth(labelWidth);
+    combo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    connect(combo, &QComboBox::currentIndexChanged, this, &ComboBoxLayout::currentIndexChanged);
+}
+
+
+
+
+
+
+PushButtonLayout::PushButtonLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    button = new QPushButton(parent);
+
+    addWidget(label);
+    addWidget(button);
+
+    label->setFixedWidth(labelWidth);
+    button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    connect(button, &QPushButton::released, this, &PushButtonLayout::released);
+}
+
+
+
+
 }// namespace mlayout
 
 

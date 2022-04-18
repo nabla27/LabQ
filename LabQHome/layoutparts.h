@@ -410,6 +410,47 @@ signals:
 
 
 
+class ComboBoxLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit ComboBoxLayout(const QString& name, QWidget *parent, const int labelWidth);
+    void setItems(const QStringList& list) { combo->addItems(list); }
+
+public slots:
+    void setCurrentIndex(const int index) { combo->setCurrentIndex(index); }
+
+private:
+    QComboBox *combo;
+
+signals:
+    void currentIndexChanged(const int index);
+};
+
+
+
+
+
+class PushButtonLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit PushButtonLayout(const QString& name, QWidget *parent, const int labelWidth);
+    void setButtonText(const QString& text) { button->setText(text); }
+
+private:
+    QPushButton *button;
+
+signals:
+    void released();
+};
+
+
+
+
+
+
+
 
 
 

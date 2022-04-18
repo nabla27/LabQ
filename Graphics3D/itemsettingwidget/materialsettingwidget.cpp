@@ -7,16 +7,16 @@ MaterialSettingWidget::MaterialSettingWidget(Qt3DRender::QMaterial *material,
     : QWidget(parent), material(material)
 {
     QVBoxLayout *vLayout = new QVBoxLayout(this);
-    materialCombo = new QComboBox(this);
+    materialCombo = new mlayout::ComboBoxLayout("Type", this, label_width_material);
     stackedWidget = new QStackedWidget(this);
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     setLayout(vLayout);
-    vLayout->addWidget(materialCombo);
+    vLayout->addLayout(materialCombo);
     vLayout->addWidget(stackedWidget);
     vLayout->addItem(spacer);
 
-    materialCombo->addItems(QStringList()
+    materialCombo->setItems(QStringList()
                             << "Diffuse map"
                             << "Diffuse specular map"
                             << "Diffuse specular"
@@ -60,7 +60,9 @@ MaterialSettingWidget::MaterialSettingWidget(Qt3DRender::QMaterial *material,
     stackedWidget->setCurrentIndex(10);
     vLayout->setContentsMargins(0, 0, 0, 0);
 
-    connect(materialCombo, &QComboBox::currentIndexChanged, this, &MaterialSettingWidget::changeMaterial);
+    phong->initParameter(qobject_cast<Qt3DExtras::QPhongMaterial*>(material));
+
+    connect(materialCombo, &mlayout::ComboBoxLayout::currentIndexChanged, this, &MaterialSettingWidget::changeMaterial);
 }
 
 void MaterialSettingWidget::changeMaterial(const int index)
@@ -279,6 +281,8 @@ PhongSettingWidget::PhongSettingWidget(QWidget *parent)
     vLayout->addLayout(shininess);
     vLayout->addItem(spacer);
 
+    shininess->setSpinBoxMaxValue(100000);
+
     vLayout->setContentsMargins(0, 0, 0, 0);
 }
 
@@ -288,6 +292,23 @@ void PhongSettingWidget::setMaterial(Qt3DExtras::QPhongMaterial *material)
     material->setDiffuse(diffuse->getColor());
     material->setSpecular(specular->getColor());
     material->setShininess(shininess->value());
+
+    connect(ambient, &mlayout::ColorButtonLayout::colorChanged, material, &Qt3DExtras::QPhongMaterial::setAmbient);
+    connect(diffuse, &mlayout::ColorButtonLayout::colorChanged, material, &Qt3DExtras::QPhongMaterial::setDiffuse);
+    connect(specular, &mlayout::ColorButtonLayout::colorChanged, material, &Qt3DExtras::QPhongMaterial::setSpecular);
+    connect(shininess, &mlayout::DoubleSbLayout::valueChanged, material, &Qt3DExtras::QPhongMaterial::setShininess);
+    connect(material, &Qt3DExtras::QPhongMaterial::ambientChanged, ambient, &mlayout::ColorButtonLayout::setColor);
+    connect(material, &Qt3DExtras::QPhongMaterial::diffuseChanged, diffuse, &mlayout::ColorButtonLayout::setColor);
+    connect(material, &Qt3DExtras::QPhongMaterial::specularChanged, specular, &mlayout::ColorButtonLayout::setColor);
+    connect(material, &Qt3DExtras::QPhongMaterial::shininessChanged, shininess, &mlayout::DoubleSbLayout::setValue);
+}
+
+void PhongSettingWidget::initParameter(Qt3DExtras::QPhongMaterial *material)
+{
+    ambient->setColor(material->ambient());
+    diffuse->setColor(material->diffuse());
+    specular->setColor(material->diffuse());
+    shininess->setValue(material->shininess());
 
     connect(ambient, &mlayout::ColorButtonLayout::colorChanged, material, &Qt3DExtras::QPhongMaterial::setAmbient);
     connect(diffuse, &mlayout::ColorButtonLayout::colorChanged, material, &Qt3DExtras::QPhongMaterial::setDiffuse);

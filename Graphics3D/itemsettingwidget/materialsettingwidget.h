@@ -43,7 +43,7 @@ private slots:
 
 private:
     Qt3DRender::QMaterial *material;
-    QComboBox *materialCombo;
+    mlayout::ComboBoxLayout *materialCombo;
     QStackedWidget *stackedWidget;
 
     DiffuseMapSettingWidget *diffuseMap;
@@ -149,6 +149,7 @@ class PhongSettingWidget : public QWidget
 public:
     PhongSettingWidget(QWidget *parent);
     void setMaterial(Qt3DExtras::QPhongMaterial *material);
+    void initParameter(Qt3DExtras::QPhongMaterial *material);
 
 private:
     mlayout::ColorButtonLayout *ambient;
