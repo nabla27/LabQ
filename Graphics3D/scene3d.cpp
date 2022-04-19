@@ -1,5 +1,7 @@
 #include "scene3d.h"
 
+#include "custommesh/linemesh.h"
+
 Scene3D::Scene3D()
 {
     rootEntity = new Qt3DCore::QEntity();
@@ -19,6 +21,17 @@ Scene3D::Scene3D()
     //camController->setLinearSpeed(50.0f);
     //camController->setLookSpeed(180.0f);
     //camController->setCamera(cameraEntity);
+
+    Qt3DCore::QEntity *lineEntity = new Qt3DCore::QEntity(rootEntity);
+    LineMesh_ *lineMesh = new LineMesh_(lineEntity);
+    Qt3DExtras::QPhongMaterial *material = new Qt3DExtras::QPhongMaterial(lineEntity);
+    Qt3DCore::QTransform *lineTransform = new Qt3DCore::QTransform(lineEntity);
+    lineEntity->addComponent(lineMesh);
+    lineEntity->addComponent(material);
+    lineEntity->addComponent(lineTransform);
+    material->setAmbient(Qt::red);
+
+    //drawLine({0, 0, 0}, {10, 0, 0}, Qt::red, rootEntity);
 }
 
 Scene3D::~Scene3D()

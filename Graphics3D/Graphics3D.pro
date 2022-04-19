@@ -40,3 +40,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome
 
 include(itemsettingwidget/itemsettingwidget.pri)
+include(custommesh/custommesh.pri)

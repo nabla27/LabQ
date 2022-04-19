@@ -65,16 +65,18 @@ PlaneMeshSettingWidget::PlaneMeshSettingWidget(Qt3DExtras::QPlaneMesh *mesh)
     vLayout->addLayout(mirrored);
 
     height->setSpinBoxMaxValue(100000);
-    height->setSpinBoxMinValue(1);
+    height->setSpinBoxMinValue(0.01);   //0以下が指定されるとクラッシュする
     height->setValue(mesh->height());
     width->setSpinBoxMaxValue(100000);
-    width->setSpinBoxMinValue(1);
+    width->setSpinBoxMinValue(0.01);
     width->setValue(mesh->width());
     mirrored->setChecked(mesh->mirrored());
 
     connect(height, &mlayout::DoubleSbLayout::valueChanged, mesh, &Qt3DExtras::QPlaneMesh::setHeight);
     connect(width, &mlayout::DoubleSbLayout::valueChanged, mesh, &Qt3DExtras::QPlaneMesh::setWidth);
     connect(mirrored, &mlayout::CheckBoxLayout::clicked, mesh, &Qt3DExtras::QPlaneMesh::setMirrored);
+
+    vLayout->setContentsMargins(0, 0, 0, 0);
 }
 
 
