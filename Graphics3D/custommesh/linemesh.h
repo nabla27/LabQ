@@ -4,16 +4,6 @@
 #include <Qt3DRender/QGeometryRenderer>
 #include <Qt3DCore/QGeometry>
 
-class LineMesh : public Qt3DRender::QGeometryRenderer
-{
-public:
-    LineMesh(Qt3DCore::QNode *parent = nullptr);
-
-private:
-    QVector3D start = {10, 0, 0};
-    QVector3D end = {0, 0, 0};
-};
-
 
 class LineGeometry : public Qt3DCore::QGeometry
 {
@@ -44,11 +34,11 @@ private:
 
 
 
-class LineMesh_ : public Qt3DRender::QGeometryRenderer
+class LineMesh : public Qt3DRender::QGeometryRenderer
 {
     Q_OBJECT
 public:
-    LineMesh_(Qt3DCore::QNode *parent = nullptr);
+    LineMesh(Qt3DCore::QNode *parent = nullptr);
 
 public:
     QVector3D startPosition() const { return static_cast<LineGeometry*>(geometry())->startPosition(); }

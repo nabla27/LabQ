@@ -1,6 +1,6 @@
 #include "scene3d.h"
 
-#include "custommesh/linemesh.h"
+#include "custommesh/gridmesh.h"
 
 Scene3D::Scene3D()
 {
@@ -23,7 +23,7 @@ Scene3D::Scene3D()
     //camController->setCamera(cameraEntity);
 
     Qt3DCore::QEntity *lineEntity = new Qt3DCore::QEntity(rootEntity);
-    LineMesh_ *lineMesh = new LineMesh_(lineEntity);
+    GridMesh *lineMesh = new GridMesh(lineEntity);
     Qt3DExtras::QPhongMaterial *material = new Qt3DExtras::QPhongMaterial(lineEntity);
     Qt3DCore::QTransform *lineTransform = new Qt3DCore::QTransform(lineEntity);
     lineEntity->addComponent(lineMesh);
