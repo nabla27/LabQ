@@ -368,6 +368,24 @@ DoubleSbLayout::DoubleSbLayout(const QString& name, QWidget *parent, const int l
 
 
 
+IntSbLayout::IntSbLayout(const QString& name, QWidget *parent, const int labelWidth)
+{
+    QLabel *label = new QLabel(name, parent);
+    spinBox = new QSpinBox(parent);
+
+    addWidget(label);
+    addWidget(spinBox);
+
+    label->setFixedWidth(labelWidth);
+    spinBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    connect(spinBox, &QSpinBox::valueChanged, this, &IntSbLayout::valueChanged);
+}
+
+
+
+
+
 
 
 ComboBoxLayout::ComboBoxLayout(const QString& name, QWidget *parent, const int labelWidth)

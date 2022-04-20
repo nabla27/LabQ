@@ -2,7 +2,11 @@
 #define ORBITCONTROLLER_H
 
 #include <QObject>
+#include <QGroupBox>
 #include <Qt3DCore/QTransform>
+#include <QPropertyAnimation>
+#include "layoutparts.h"
+#include "property_animation_setting.h"
 
 class OrbitController : public QObject
 {
@@ -15,13 +19,12 @@ public:
     explicit OrbitController(QObject *parent = nullptr);
 
     void setTarget(Qt3DCore::QTransform *target);
-    Qt3DCore::QTransform *target() const;
-
     void setRadius(const float radius);
-    float radius() const;
-
     void setAngle(const float angle);
-    float angle() const;
+
+    Qt3DCore::QTransform *target() const { return _target; }
+    float radius() const { return _radius; }
+    float angle() const { return _angle; }
 
 private:
     void updateMatrix();
@@ -37,5 +40,26 @@ signals:
     void radiusChanged();
     void angleChanged();
 };
+
+
+
+
+
+class OrbitAnimationSettingWidget : public QGroupBox
+{
+    Q_OBJECT
+public:
+    OrbitAnimationSettingWidget(QPropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent);
+
+private:
+    OrbitController *controller;
+
+signals:
+    void indexChanged(const int index);
+};
+
+
+
+
 
 #endif // ORBITCONTROLLER_H

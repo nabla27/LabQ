@@ -7,6 +7,7 @@
 #include <QSpacerItem>
 #include "transform_setting_widget.h"
 #include "material_setting_widget.h"
+#include "animation_setting_widget.h"
 
 class BasicShapeSettingWidget : public QWidget
 {
@@ -28,6 +29,8 @@ private:
     QWidget *meshSettingWidget;
     QPushButton *materialButton;
     MaterialSettingWidget *materialSettingWidget;
+    QPushButton *animationButton;
+    AnimationSettingWidget *animationSettingWidget;
 };
 
 #endif // BASIC_SHAPE_SETTING_WIDGET_H

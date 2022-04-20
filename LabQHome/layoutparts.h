@@ -409,6 +409,29 @@ signals:
 
 
 
+class IntSbLayout : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit IntSbLayout(const QString& name, QWidget *parent, const int labelWidth);
+    void setSpinBoxMaxValue(const int max) { spinBox->setMaximum(max); }
+    void setSpinBoxMinValue(const int min) { spinBox->setMinimum(min); }
+    int value() { return spinBox->value(); }
+
+public slots:
+    void setValue(const int value) { spinBox->setValue(value); }
+
+private:
+    QSpinBox *spinBox;
+
+signals:
+    void valueChanged(const int& value);
+};
+
+
+
+
+
 
 class ComboBoxLayout : public QHBoxLayout
 {

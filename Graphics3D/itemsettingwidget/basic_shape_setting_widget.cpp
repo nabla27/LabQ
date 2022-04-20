@@ -1,8 +1,9 @@
 #include "basic_shape_setting_widget.h"
 
-/* BasicShapeSettingWidget ---|--- TransformSettingWidget
- *                            |--- (    )MeshSettingWidget  ---> basicmeshsettingwidget.h
- *                            |--- MaterialSettingWidget
+/* BasicShapeSettingWidget ---|--- TransformSettingWidget   ---> transform_setting_widget.h
+ *                            |--- (    )MeshSettingWidget  ---> basic_mesh_setting_widget.h
+ *                            |--- MaterialSettingWidget    ---> material_setting_widget.h
+ *                            |--- AnimationSettingWidget   ---> animation_setting_widget.h
  */
 
 BasicShapeSettingWidget::BasicShapeSettingWidget(Qt3DRender::QGeometryRenderer *mesh,
@@ -22,6 +23,8 @@ BasicShapeSettingWidget::BasicShapeSettingWidget(Qt3DRender::QGeometryRenderer *
     meshButton = new QPushButton("Mesh", this);
     materialButton = new QPushButton("Material", this);
     materialSettingWidget = new MaterialSettingWidget(material, this);
+    animationButton = new QPushButton("Animation", this);
+    animationSettingWidget = new AnimationSettingWidget(transform, this);
 
     setLayout(vLayout);
     vLayout->addWidget(transformButton);
@@ -30,11 +33,14 @@ BasicShapeSettingWidget::BasicShapeSettingWidget(Qt3DRender::QGeometryRenderer *
     vLayout->addWidget(meshSettingWidget);
     vLayout->addWidget(materialButton);
     vLayout->addWidget(materialSettingWidget);
+    vLayout->addWidget(animationButton);
+    vLayout->addWidget(animationSettingWidget);
     vLayout->addItem(spacer);
 
     connect(transformButton, &QPushButton::released, transformSettingWidget, &TransformSettingWidget::changeVisible);
     connect(meshButton, &QPushButton::released, this, &BasicShapeSettingWidget::changeMeshWidgetVisible);
     connect(materialButton, &QPushButton::released, materialSettingWidget, &MaterialSettingWidget::changeVisible);
+    connect(animationButton, &QPushButton::released, animationSettingWidget, &AnimationSettingWidget::changeVisible);
 }
 
 void BasicShapeSettingWidget::changeMeshWidgetVisible()

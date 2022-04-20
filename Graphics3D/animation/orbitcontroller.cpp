@@ -1,5 +1,7 @@
 #include "orbitcontroller.h"
 
+static const int label_width = 100;
+
 OrbitController::OrbitController(QObject *parent)
     : QObject(parent)
     , _target(nullptr)
@@ -42,3 +44,45 @@ void OrbitController::updateMatrix()
     _matrix.translate(_radius, 0, 0);
     _target->setMatrix(_matrix);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+OrbitAnimationSettingWidget::OrbitAnimationSettingWidget(QPropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent)
+    : QGroupBox(parent)
+    , controller(new OrbitController(transform))
+{
+    controller->setTarget(transform);
+    animation->setTargetObject(controller);
+    animation->setPropertyName("angle");
+
+    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    PropertyControllerLayout *cLayout = new PropertyControllerLayout(animation, this);
+    mlayout::DoubleSbLayout *radius = new mlayout::DoubleSbLayout("Radius", this, label_width);
+    PropertyAnimationSettingLayout *pLayout = new PropertyAnimationSettingLayout(animation, this, "angle", label_width);
+
+    setLayout(vLayout);
+    vLayout->addLayout(cLayout);
+    vLayout->addLayout(radius);
+    vLayout->addLayout(pLayout);
+
+    radius->setSpinBoxMaxValue(100000);
+    radius->setSpinBoxMinValue(0.01);
+
+    radius->setValue(controller->radius());
+
+    connect(radius, &mlayout::DoubleSbLayout::valueChanged, controller, &OrbitController::setRadius);
+}
+
+
+
+
+
