@@ -29,9 +29,12 @@ public slots:
     void setGridStride(const float& stride);
 
 private:
+    unsigned int vertexCount() const { return 2 * (unsigned int)((height + width) / stride) + 4; }
+
+private:
     float width = 100.0f;
     float height = 100.0f;
-    float stride = 1.0f;
+    float stride = 5.0f;
 };
 
 

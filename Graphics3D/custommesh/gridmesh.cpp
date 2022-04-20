@@ -1,5 +1,23 @@
 #include "gridmesh.h"
 
+/*
+ *        y
+ *        |
+ *        |
+ *        |_______x
+ *       /
+ *      /     _ _ _ _ _ _ _ _ _  _ _ _
+ *     /    /_/_/_/_/_/_/_/_/_/  _ _ _ stride
+ *    z    /_/_/_/_/_/_/_/_/_/
+ *        /_/_/_/_/_/_/_/_/_/
+ *       /_/_/_/_/_/_/_/_/_/ height
+ *      /_/_/_/_/_/_/_/_/_/
+ *     /_/_/_/_/_/_/_/_/_/
+ *    /_/_/_/_/_/_/_/_/_/
+ *          width
+ *
+ *
+ */
 
 GridGeometry::GridGeometry(Qt3DCore::QNode *parent)
     : Qt3DCore::QGeometry(parent)
@@ -52,44 +70,92 @@ void GridGeometry::setGridStride(const float& stride)
 
 void GridGeometry::updateVertices()
 {
-    //const unsigned int widthLineCount = width / stride * 2 + 1;
+    const unsigned int vertexCount = this->vertexCount();
 
     QByteArray positionArray;
-    positionArray.resize(3 * 4 * sizeof(float));
-    float *position = reinterpret_cast<float*>(positionArray.data());
+    positionArray.resize(3 * vertexCount * sizeof(float)); //(x,y,z) * 端数 * float
+    float *position = reinterpret_cast<float *>(positionArray.data());
 
-    *position++ = 0;
-    *position++ = 0;
-    *position++ = -50;
-    *position++ = 0;
-    *position++ = 0;
-    *position++ = 50;
-    *position++ = 50;
-    *position++ = 0;
-    *position++ = 0;
-    *position++ = -50;
-    *position++ = 0;
-    *position++ = 0;
+    const float halfWidth = width / 2.0f;
+    const float halfHeight = height / 2.0f;
+
+    /* 中心(0,0)をクロスする軸 */
+    //x軸に平行な軸
+    *position++ = -halfWidth;
+    *position++ = 0.0f;
+    *position++ = 0.0f;
+    *position++ = halfWidth;
+    *position++ = 0.0f;
+    *position++ = 0.0f;
+    //z軸に平行な軸
+    *position++ = 0.0f;
+    *position++ = 0.0f;
+    *position++ = -halfHeight;
+    *position++ = 0.0f;
+    *position++ = 0.0f;
+    *position++ = halfHeight;
+
+    /* 平面半分側の軸の数(中心軸を除く) */
+    const unsigned int xGridHalfCount = height / stride / 2.0f;
+    const unsigned int zGridHalfCount = width / stride / 2.0f;
+
+    /* x軸に水平な軸。中心軸から左右に軸を生成していく */
+    for(unsigned int i = 1; i <= xGridHalfCount; ++i)
+    {
+        const float z = i * stride;
+        //+z側の軸
+        *position++ = -halfWidth;
+        *position++ = 0.0f;
+        *position++ = z;
+        *position++ = halfWidth;
+        *position++ = 0.0f;
+        *position++ = z;
+        //-z側の軸
+        *position++ = -halfWidth;
+        *position++ = 0.0f;
+        *position++ = -z;
+        *position++ = halfWidth;
+        *position++ = 0.0f;
+        *position++ = -z;
+    }
+
+    /* z軸に平行な軸。中心軸から左右に軸を生成 */
+    for(unsigned int i = 1; i <= zGridHalfCount; ++i)
+    {
+        const float x = i * stride;
+        //+x方向
+        *position++ = x;
+        *position++ = 0.0f;
+        *position++ = -halfHeight;
+        *position++ = x;
+        *position++ = 0.0f;
+        *position++ = halfHeight;
+        //-x方向
+        *position++ = -x;
+        *position++ = 0.0f;
+        *position++ = -halfHeight;
+        *position++ = -x;
+        *position++ = 0.0f;
+        *position++ = halfHeight;
+    }
 
     positionBuffer->setData(positionArray);
-    positionAttribute->setCount(4);
+    positionAttribute->setCount(vertexCount);
 }
 
 void GridGeometry::updateIndices()
 {
-#if 1
+    const unsigned int vertexCount = this->vertexCount();
+
     QByteArray indexArray;
-    indexArray.resize(4 * sizeof(unsigned int));
+    indexArray.resize(vertexCount * sizeof(unsigned int));
     unsigned int *index = reinterpret_cast<unsigned int*>(indexArray.data());
 
-    *index++ = 0;
-    *index++ = 1;
-    *index++ = 2;
-    *index++ = 3;
+    for(unsigned int i = 0; i < vertexCount; ++i)
+        *index++ = i;
 
     indexBuffer->setData(indexArray);
-    indexAttribute->setCount(4);
-#endif
+    indexAttribute->setCount(vertexCount);
 }
 
 
