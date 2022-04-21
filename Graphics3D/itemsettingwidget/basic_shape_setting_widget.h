@@ -18,6 +18,7 @@ public:
                                      Qt3DRender::QMaterial *material,
                                      QWidget *meshSettingWidget,
                                      QWidget *parent);
+    SequentialAnimationGroup* animation() const { return animationSettingWidget->animation(); }
 
 private slots:
     void changeMeshWidgetVisible();

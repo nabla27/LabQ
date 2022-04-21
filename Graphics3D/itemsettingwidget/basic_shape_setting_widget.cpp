@@ -11,7 +11,8 @@ BasicShapeSettingWidget::BasicShapeSettingWidget(Qt3DRender::QGeometryRenderer *
                                                  Qt3DRender::QMaterial *material,
                                                  QWidget *meshSettingWidget,
                                                  QWidget *parent)
-    : QWidget(parent), meshSettingWidget(meshSettingWidget)
+    : QWidget(parent)
+    , meshSettingWidget(meshSettingWidget)
 {
     meshSettingWidget->setParent(this);
 

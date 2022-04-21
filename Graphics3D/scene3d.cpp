@@ -3,8 +3,9 @@
 #include "custommesh/gridmesh.h"
 
 Scene3D::Scene3D()
+    : rootEntity(new Qt3DCore::QEntity)
+    , camController(new Qt3DExtras::QOrbitCameraController(rootEntity))
 {
-    rootEntity = new Qt3DCore::QEntity();
     cameraEntity = this->camera();
     setRootEntity(rootEntity);
 
@@ -12,7 +13,6 @@ Scene3D::Scene3D()
     cameraEntity->setViewCenter(QVector3D(0, 0, 0));
     cameraEntity->setPosition(QVector3D(0, 0, 40.0f));
 
-    camController = new Qt3DExtras::QOrbitCameraController(rootEntity);
     camController->setLinearSpeed( 50.0f );
     camController->setLookSpeed( 180.0f );
     camController->setCamera(cameraEntity);
@@ -30,12 +30,35 @@ Scene3D::Scene3D()
     lineEntity->addComponent(material);
     lineEntity->addComponent(lineTransform);
     material->setAmbient(Qt::red);
-
-    //drawLine({0, 0, 0}, {10, 0, 0}, Qt::red, rootEntity);
 }
 
 Scene3D::~Scene3D()
 {
     delete rootEntity;
-    delete cameraEntity;
 }
+
+void Scene3D::addComponent(Qt3DCore::QEntity *entity)
+{
+    entity->setParent(rootEntity);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

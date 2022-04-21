@@ -56,7 +56,7 @@ void OrbitController::updateMatrix()
 
 
 
-OrbitAnimationSettingWidget::OrbitAnimationSettingWidget(QPropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent)
+OrbitAnimationSettingWidget::OrbitAnimationSettingWidget(PropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent)
     : QGroupBox(parent)
     , controller(new OrbitController(transform))
     , animation(animation)
@@ -81,7 +81,7 @@ OrbitAnimationSettingWidget::OrbitAnimationSettingWidget(QPropertyAnimation *ani
     radius->setValue(controller->radius());
 
     connect(radius, &mlayout::DoubleSbLayout::valueChanged, controller, &OrbitController::setRadius);
-    connect(animation, &QPropertyAnimation::finished, this, &OrbitAnimationSettingWidget::initAnimation);
+    connect(animation, &PropertyAnimation::finished, this, &OrbitAnimationSettingWidget::initAnimation);
 }
 
 void OrbitAnimationSettingWidget::initAnimation()

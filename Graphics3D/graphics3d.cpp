@@ -16,7 +16,7 @@ void Graphics3D::initializeLayout()
     QHBoxLayout *hLayout = new QHBoxLayout;
     QVBoxLayout *vLayout = new QVBoxLayout;
 
-    contorollerPanel = new ContorollerPanel(widget);
+    controllerPanel = new ControllerPanel(widget);
     scene3d = new Scene3D();
     scene3dWidget = QWidget::createWindowContainer(scene3d);
     managerWidget = new QTabWidget(widget);
@@ -27,7 +27,7 @@ void Graphics3D::initializeLayout()
     widget->setLayout(hLayout);
     hLayout->addLayout(vLayout);
     hLayout->addWidget(managerWidget);
-    vLayout->addWidget(contorollerPanel);
+    vLayout->addWidget(controllerPanel);
     vLayout->addWidget(scene3dWidget);
     managerWidget->addTab(sceneManager, "Scene");
     managerWidget->addTab(componentManager, "Component");
@@ -35,6 +35,7 @@ void Graphics3D::initializeLayout()
     managerWidget->setFixedWidth(330);
 
     connect(componentManager, &ComponentManager::componentAdded, scene3d, &Scene3D::addComponent);
+    connect(componentManager, &ComponentManager::animationAdded, controllerPanel, &ControllerPanel::addAnimation);
 }
 
 

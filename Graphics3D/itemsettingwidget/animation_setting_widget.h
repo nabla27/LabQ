@@ -3,10 +3,12 @@
 
 #include <QWidget>
 #include <QSequentialAnimationGroup>
+#include <QPauseAnimation>
 #include <Qt3DCore/QTransform>
 #include <QMenu>
 #include "animation/orbitcontroller.h"
 #include "layoutparts.h"
+
 
 class AnimationSettingWidget : public QWidget
 {
@@ -14,17 +16,30 @@ class AnimationSettingWidget : public QWidget
 public:
     explicit AnimationSettingWidget(Qt3DCore::QTransform *transform, QWidget *parent = nullptr);
     void changeVisible() { setVisible(!isVisible()); }
+    SequentialAnimationGroup* animation() const { return sequensAnimation; }
 
 private slots:
     void requestOrbitAnimation();
+    void requestPauseAnimation();
 
 private:
     QVBoxLayout *vLayout;
     Qt3DCore::QTransform *transform;
-    QSequentialAnimationGroup *sequensAnimation;
+    SequentialAnimationGroup *sequensAnimation;
 
 signals:
 
+};
+
+
+
+
+
+class PauseAnimationSettingWidget : public QGroupBox
+{
+    Q_OBJECT
+public:
+    PauseAnimationSettingWidget(PauseAnimation *animation, QWidget *parent);
 };
 
 #endif // ANIMATION_SETTING_WIDGET_H

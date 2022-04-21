@@ -30,6 +30,7 @@ private:
 
 signals:
     void componentAdded(Qt3DCore::QEntity *entity);
+    void animationAdded(SequentialAnimationGroup *animation);
 };
 
 #endif // COMPONENTMANAGER_H

@@ -6,7 +6,7 @@
 #include <QTabWidget>
 #include "utility.h"
 #include "scene3d.h"
-#include "contorollerpanel.h"
+#include "controllerpanel.h"
 #include "scenemanager.h"
 #include "componentmanager.h"
 
@@ -20,7 +20,7 @@ private:
     void initializeLayout();
 
 private:
-    ContorollerPanel *contorollerPanel = nullptr;
+    ControllerPanel *controllerPanel = nullptr;
     Scene3D *scene3d = nullptr;
     QWidget *scene3dWidget = nullptr;
     QTabWidget *managerWidget = nullptr;

@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QGroupBox>
 #include <Qt3DCore/QTransform>
-#include <QPropertyAnimation>
 #include "layoutparts.h"
 #include "property_animation_setting.h"
 
@@ -49,11 +48,11 @@ class OrbitAnimationSettingWidget : public QGroupBox
 {
     Q_OBJECT
 public:
-    OrbitAnimationSettingWidget(QPropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent);
+    OrbitAnimationSettingWidget(PropertyAnimation *animation, Qt3DCore::QTransform *transform, QWidget *parent);
 
 private:
     OrbitController *controller;
-    QPropertyAnimation *animation;
+    PropertyAnimation *animation;
     void initAnimation();
 
 signals:

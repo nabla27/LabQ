@@ -67,8 +67,10 @@ void ComponentManager::requestBasicShape(Qt3DRender::QGeometryRenderer *mesh, QW
 
     BasicShapeSettingWidget *widget = new BasicShapeSettingWidget(mesh, transform, material, meshWidget, this);
     stackedWidget->addWidget(widget);
+    stackedWidget->setCurrentWidget(widget);
 
     emit componentAdded(entity);
+    emit animationAdded(widget->animation());
 }
 
 void ComponentManager::requestBasicShapeTorus()

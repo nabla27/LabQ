@@ -15,7 +15,7 @@ SOURCES += \
     ../LabQHome/layoutparts.cpp \
     ../LabQHome/utility.cpp \
     componentmanager.cpp \
-    contorollerpanel.cpp \
+    controllerpanel.cpp \
     graphics3d.cpp \
     main.cpp \
     scene3d.cpp \
@@ -25,7 +25,7 @@ HEADERS += \
     ../LabQHome/layoutparts.h \
     ../LabQHome/utility.h \
     componentmanager.h \
-    contorollerpanel.h \
+    controllerpanel.h \
     graphics3d.h \
     scene3d.h \
     scenemanager.h

@@ -14,14 +14,16 @@
 #include <Qt3DExtras/QPlaneGeometry>
 #include <Qt3DExtras/QPlaneMesh>
 
+#include <QParallelAnimationGroup>
+
 class Scene3D : public Qt3DExtras::Qt3DWindow
 {
 public:
     Scene3D();
     ~Scene3D();
 
-public:
-    void addComponent(Qt3DCore::QEntity *entity) { entity->setParent(rootEntity); }
+public slots:
+    void addComponent(Qt3DCore::QEntity *entity);
 
 private:
     Qt3DCore::QEntity *rootEntity;

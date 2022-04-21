@@ -1,6 +1,6 @@
 #include "property_animation_setting.h"
 
-PropertyAnimationSettingLayout::PropertyAnimationSettingLayout(QPropertyAnimation *animation, QWidget *parent, const QString& propertyName, const int labelWidth)
+PropertyAnimationSettingLayout::PropertyAnimationSettingLayout(PropertyAnimation *animation, QWidget *parent, const QString& propertyName, const int labelWidth)
     : QVBoxLayout()
 {
     mlayout::DoubleSbLayout *startAngle = new mlayout::DoubleSbLayout("Start " + propertyName, parent, labelWidth);
@@ -26,10 +26,10 @@ PropertyAnimationSettingLayout::PropertyAnimationSettingLayout(QPropertyAnimatio
     duration->setValue(animation->duration());
     loopCount->setValue(animation->loopCount());
 
-    connect(startAngle, &mlayout::DoubleSbLayout::valueChanged, animation, &QPropertyAnimation::setStartValue);
-    connect(endAngle, &mlayout::DoubleSbLayout::valueChanged, animation, &QPropertyAnimation::setEndValue);
-    connect(duration, &mlayout::IntSbLayout::valueChanged, animation, &QPropertyAnimation::setDuration);
-    connect(loopCount, &mlayout::IntSbLayout::valueChanged, animation, &QPropertyAnimation::setLoopCount);
+    connect(startAngle, &mlayout::DoubleSbLayout::valueChanged, animation, &PropertyAnimation::setStartValue);
+    connect(endAngle, &mlayout::DoubleSbLayout::valueChanged, animation, &PropertyAnimation::setEndValue);
+    connect(duration, &mlayout::IntSbLayout::valueChanged, animation, &PropertyAnimation::setDuration);
+    connect(loopCount, &mlayout::IntSbLayout::valueChanged, animation, &PropertyAnimation::setLoopCount);
 }
 
 
@@ -38,7 +38,7 @@ PropertyAnimationSettingLayout::PropertyAnimationSettingLayout(QPropertyAnimatio
 
 
 
-PropertyControllerLayout::PropertyControllerLayout(QPropertyAnimation *animation, QWidget *parent)
+PropertyControllerLayout::PropertyControllerLayout(PropertyAnimation *animation, QWidget *parent)
     : QHBoxLayout()
     , animation(animation)
 {
