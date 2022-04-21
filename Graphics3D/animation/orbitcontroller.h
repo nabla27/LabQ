@@ -53,6 +53,8 @@ public:
 
 private:
     OrbitController *controller;
+    QPropertyAnimation *animation;
+    void initAnimation();
 
 signals:
     void indexChanged(const int index);

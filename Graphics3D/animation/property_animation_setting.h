@@ -28,7 +28,6 @@ public:
 private:
     void playAnimation();
     void resetAnimation();
-    void resetCurrentProperty();
 
 private:
     QPropertyAnimation *animation;

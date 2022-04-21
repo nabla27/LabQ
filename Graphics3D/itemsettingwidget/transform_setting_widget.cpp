@@ -35,6 +35,8 @@ TransformSettingWidget::TransformSettingWidget(Qt3DCore::QTransform *transform,
     connect(matrixButton, &mlayout::PushButtonLayout::released, matrixWidget, &TransformMatrixWidget::changeVisible);
     connect(matrixWidget, &TransformMatrixWidget::matrixChanged, transform, &Qt3DCore::QTransform::setMatrix);
 
+    /* アニメーションなどで、transformが変更された場合など */
+    connect(transform, &Qt3DCore::QTransform::translationChanged, position, &mlayout::Layout3DParam::setV3Value);
     connect(transform, &Qt3DCore::QTransform::rotationXChanged, rotation, &mlayout::Layout3DParam::setX);
     connect(transform, &Qt3DCore::QTransform::rotationYChanged, rotation, &mlayout::Layout3DParam::setY);
     connect(transform, &Qt3DCore::QTransform::rotationZChanged, rotation, &mlayout::Layout3DParam::setZ);

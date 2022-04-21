@@ -52,12 +52,10 @@ PropertyControllerLayout::PropertyControllerLayout(QPropertyAnimation *animation
 
     connect(playButton, &QPushButton::released, this, &PropertyControllerLayout::playAnimation);
     connect(resetButton, &QPushButton::released, this, &PropertyControllerLayout::resetAnimation);
-    connect(animation, &QPropertyAnimation::finished, this, &PropertyControllerLayout::resetCurrentProperty);
 }
 
 void PropertyControllerLayout::playAnimation()
 {
-    qDebug() << animation->state();
     if(animation->state() == QAbstractAnimation::State::Stopped)
         animation->start();
     else if(animation->state() == QAbstractAnimation::State::Paused)
@@ -66,21 +64,14 @@ void PropertyControllerLayout::playAnimation()
         animation->pause();
 }
 
+/* 再生中、アニメーションを最初の状態に戻す。アニメーションが再生中の場合にのみ、propertyは初期値に設定される。
+ * アニメーションが終了した後にsetCurrentTime(0)を行ってもpropertyは初期値に戻らない。
+ * よって、アニメーションが終了した際の初期化は別の場所で行う。 */
 void PropertyControllerLayout::resetAnimation()
 {
-    qDebug() << animation->currentTime();
-    qDebug() << animation->currentValue();
     animation->setCurrentTime(0);
-    animation->pause();
-}
-
-void PropertyControllerLayout::resetCurrentProperty()
-{
-    animation->setCurrentTime(0);
-    QVariant end = animation->endValue();
-    animation->setEndValue(animation->startValue());
-    animation->setEndValue(end);
-    qDebug() << animation->state();
+    if(animation->state() == QAbstractAnimation::State::Running)
+        animation->pause();
 }
 
 
