@@ -23,7 +23,7 @@ public:
     ~Scene3D();
 
 public slots:
-    void addComponent(Qt3DCore::QEntity *entity);
+    void addObject(Qt3DCore::QEntity *entity);
 
 private:
     Qt3DCore::QEntity *rootEntity;

@@ -34,7 +34,7 @@ void Graphics3D::initializeLayout()
 
     managerWidget->setFixedWidth(330);
 
-    connect(componentManager, &ComponentManager::componentAdded, scene3d, &Scene3D::addComponent);
+    connect(componentManager, &ComponentManager::objectAdded, scene3d, &Scene3D::addObject);
     connect(componentManager, &ComponentManager::animationAdded, controllerPanel, &ControllerPanel::addAnimation);
 }
 

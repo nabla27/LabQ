@@ -1,6 +1,11 @@
 #include "scene3d.h"
 
 #include "custommesh/gridmesh.h"
+#include "custommesh/linemesh.h"
+#include <Qt3DRender/QObjectPicker>
+#include <Qt3DRender/QPickEvent>
+#include <Qt3DRender/QScreenRayCaster>
+#include <custommesh/axisentity.h>
 
 Scene3D::Scene3D()
     : rootEntity(new Qt3DCore::QEntity)
@@ -22,14 +27,24 @@ Scene3D::Scene3D()
     //camController->setLookSpeed(180.0f);
     //camController->setCamera(cameraEntity);
 
-    Qt3DCore::QEntity *lineEntity = new Qt3DCore::QEntity(rootEntity);
-    GridMesh *lineMesh = new GridMesh(lineEntity);
-    Qt3DExtras::QPhongMaterial *material = new Qt3DExtras::QPhongMaterial(lineEntity);
-    Qt3DCore::QTransform *lineTransform = new Qt3DCore::QTransform(lineEntity);
-    lineEntity->addComponent(lineMesh);
-    lineEntity->addComponent(material);
-    lineEntity->addComponent(lineTransform);
+    Qt3DCore::QEntity *gridEntity = new Qt3DCore::QEntity(rootEntity);
+    GridMesh *gridMesh = new GridMesh(gridEntity);
+    Qt3DExtras::QPhongMaterial *material = new Qt3DExtras::QPhongMaterial(gridEntity);
+    Qt3DCore::QTransform *gridTransform = new Qt3DCore::QTransform(gridEntity);
+    Qt3DRender::QObjectPicker *picker = new Qt3DRender::QObjectPicker(gridEntity);
+    Qt3DRender::QScreenRayCaster *ray = new Qt3DRender::QScreenRayCaster(gridEntity);
+    gridEntity->addComponent(gridMesh);
+    gridEntity->addComponent(material);
+    gridEntity->addComponent(gridTransform);
+    gridEntity->addComponent(picker);
+    gridEntity->addComponent(ray);
     material->setAmbient(Qt::red);
+
+    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent*){ qDebug() << __LINE__; });
+    connect(ray, &Qt3DRender::QScreenRayCaster::hitsChanged, [](const Qt3DRender::QAbstractRayCaster::Hits&){ qDebug() << __LINE__; });
+
+    AxisEntity *axis = new AxisEntity(rootEntity);
+    axis->setTransform(gridTransform);
 }
 
 Scene3D::~Scene3D()
@@ -37,7 +52,7 @@ Scene3D::~Scene3D()
     delete rootEntity;
 }
 
-void Scene3D::addComponent(Qt3DCore::QEntity *entity)
+void Scene3D::addObject(Qt3DCore::QEntity *entity)
 {
     entity->setParent(rootEntity);
 }

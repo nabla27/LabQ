@@ -5,6 +5,8 @@ static const int label_width_mesh = 100;
 
 TorusMeshSettingWidget::TorusMeshSettingWidget(Qt3DExtras::QTorusMesh *mesh)
 {
+    setObjectName("Torus");
+
     mesh->setRadius(5);
     mesh->setMinorRadius(1);
     mesh->setRings(100);
@@ -51,6 +53,8 @@ TorusMeshSettingWidget::TorusMeshSettingWidget(Qt3DExtras::QTorusMesh *mesh)
 
 PlaneMeshSettingWidget::PlaneMeshSettingWidget(Qt3DExtras::QPlaneMesh *mesh)
 {
+    setObjectName("Plane");
+
     mesh->setHeight(100);
     mesh->setWidth(100);
 
