@@ -8,6 +8,7 @@ ControllerPanel::ControllerPanel(QWidget *parent)
     , currentDurationSpin(new QSpinBox(this))
     , durationSlider(new QSlider(Qt::Orientation::Horizontal, this))
     , totalDurationEdit(new QLineEdit(QString::number(0), this))
+    , loopAnimationButton(new QPushButton("no loop", this))
 {
     setFixedHeight(30);
 
@@ -19,6 +20,7 @@ ControllerPanel::ControllerPanel(QWidget *parent)
     hLayout->addWidget(currentDurationSpin);
     hLayout->addWidget(durationSlider);
     hLayout->addWidget(totalDurationEdit);
+    hLayout->addWidget(loopAnimationButton);
 
     hLayout->setContentsMargins(0, 0, 0, 0);
     currentDurationSpin->setMinimum(0);
@@ -32,6 +34,7 @@ ControllerPanel::ControllerPanel(QWidget *parent)
     connect(currentDurationSpin, &QSpinBox::valueChanged, this, &ControllerPanel::setCurrentTime);
     connect(durationSlider, &QSlider::valueChanged, this, &ControllerPanel::setCurrentTime);
     connect(animationGroup, &ParallelAnimationGroup::currentTimeUpdated, durationSlider, &QSlider::setValue);
+    connect(loopAnimationButton, &QPushButton::released, this, &ControllerPanel::changeAnimationLoop);
 }
 
 void ControllerPanel::addAnimation(SequentialAnimationGroup *animation)
@@ -55,7 +58,19 @@ void ControllerPanel::playAnimation()
 
 void ControllerPanel::setTotalDurationEdit(const int)
 {
-    const int totalDuration = animationGroup->totalDuration();
+    /* アニメーションのループ数が-1の無限ループのとき、totalDuration()は-1を返す。
+     * 1ループあたりのdurationを得たいので、無限ループに設定されている場合は
+     * 一度1ループに設定してからtotalDuration()を呼び出す。 */
+    int totalDuration = 0;
+    if(animationGroup->loopCount() == -1)
+    {
+        animationGroup->setLoopCount(1);
+        totalDuration = animationGroup->totalDuration();
+        animationGroup->setLoopCount(-1);
+    }
+    else
+        totalDuration = animationGroup->totalDuration();
+
     totalDurationEdit->setText(QString::number(totalDuration));
     currentDurationSpin->setMaximum(totalDuration);
     durationSlider->setMaximum(totalDuration);
@@ -70,6 +85,7 @@ void ControllerPanel::resetAnimation()
 
 void ControllerPanel::setCurrentTime(const int msecs)
 {
+    /*
     switch(animationGroup->state())
     {
     case QAbstractAnimation::State::Stopped:
@@ -79,6 +95,20 @@ void ControllerPanel::setCurrentTime(const int msecs)
     default:
         break;
     }
-
+    */
     animationGroup->setCurrentTime(msecs);
+}
+
+void ControllerPanel::changeAnimationLoop()
+{
+    if(animationGroup->loopCount() == -1)
+    {
+        animationGroup->setLoopCount(1);
+        loopAnimationButton->setText("no loop");
+    }
+    else
+    {
+        animationGroup->setLoopCount(-1);
+        loopAnimationButton->setText("loop");
+    }
 }

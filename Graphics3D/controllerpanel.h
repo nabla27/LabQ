@@ -22,12 +22,14 @@ private:
     QSpinBox *currentDurationSpin;
     QSlider *durationSlider;
     QLineEdit *totalDurationEdit;
+    QPushButton *loopAnimationButton;
 
 private slots:
     void playAnimation();
     void resetAnimation();
     void setTotalDurationEdit(const int duration);
     void setCurrentTime(const int msecs);
+    void changeAnimationLoop();
 
 signals:
 
