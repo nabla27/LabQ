@@ -1,5 +1,5 @@
 #include "layoutparts.h"
-
+#include "utility.h"
 
 
 
@@ -228,7 +228,7 @@ void VerticalDragBar::mouseMoveEvent(QMouseEvent *event)
 
 namespace mlayout
 {
-
+#if 0
 Layout3DParam::Layout3DParam(const QString& name, QWidget *parent, const int labelWidth)
 {
     QLabel *label = new QLabel(name, parent);
@@ -296,6 +296,93 @@ void Layout3DParam::emitZEdited()
     quaternion.setVector(editX->text().toFloat(), editZ->text().toFloat(),  editZ->text().toFloat());
     emit xyzEditedQuaternion(quaternion);
 }
+#else
+Layout3DParam::Layout3DParam(QWidget *parent)
+{
+    QLabel *labelX = new QLabel("x", parent);
+    QLabel *labelY = new QLabel("y", parent);
+    QLabel *labelZ = new QLabel("z", parent);
+    editX = new QDoubleSpinBox(parent);
+    editY = new QDoubleSpinBox(parent);
+    editZ = new QDoubleSpinBox(parent);
+
+    addWidget(labelX);
+    addWidget(editX);
+    addWidget(labelY);
+    addWidget(editY);
+    addWidget(labelZ);
+    addWidget(editZ);
+
+
+    labelX->setMaximumWidth(8); //'X'の文字列幅分
+    labelY->setMaximumWidth(8);
+    labelZ->setMaximumWidth(8);
+
+    /* 入力の最小値/最大値 */
+    constexpr double max_spinbox_value = 1e+9;
+    constexpr double min_spinbox_value = -1e+8;
+    editX->setRange(min_spinbox_value, max_spinbox_value);
+    editY->setRange(min_spinbox_value, max_spinbox_value);
+    editZ->setRange(min_spinbox_value, max_spinbox_value);
+
+    /* 小数点以下4桁を表示 */
+    editX->setDecimals(4);
+    editY->setDecimals(4);
+    editZ->setDecimals(4);
+
+    connect(editX, &QDoubleSpinBox::valueChanged, this, &Layout3DParam::emitXEdited);
+    connect(editY, &QDoubleSpinBox::valueChanged, this, &Layout3DParam::emitYEdited);
+    connect(editZ, &QDoubleSpinBox::valueChanged, this, &Layout3DParam::emitZEdited);
+}
+
+void Layout3DParam::setV3Value(const QVector3D& vec)
+{
+    editX->setValue(vec.x());
+    editY->setValue(vec.y());
+    editZ->setValue(vec.z());
+}
+
+void Layout3DParam::setQuaternionValue(const QQuaternion& qut)
+{
+    editX->setValue(qut.x());
+    editY->setValue(qut.y());
+    editZ->setValue(qut.z());
+}
+
+void Layout3DParam::emitXEdited()
+{
+    const double x = editX->value();
+    const double y = editY->value();
+    const double z = editZ->value();
+
+    emit xEdited(x);
+    emit xyzEditedVector(QVector3D(x, y, z));
+    emit xyzEditedQuaternion(QQuaternion(0, x, y, z));
+}
+
+void Layout3DParam::emitYEdited()
+{
+    const double x = editX->value();
+    const double y = editY->value();
+    const double z = editZ->value();
+
+    emit yEdited(y);
+    emit xyzEditedVector(QVector3D(x, y, z));
+    emit xyzEditedQuaternion(QQuaternion(0, x, y, z));
+}
+
+void Layout3DParam::emitZEdited()
+{
+    const double x = editX->value();
+    const double y = editY->value();
+    const double z = editZ->value();
+
+    emit zEdited(z);
+    emit xyzEditedVector(QVector3D(x, y, z));
+    emit xyzEditedQuaternion(QQuaternion(0, x, y, z));
+}
+
+#endif
 
 
 

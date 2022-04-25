@@ -302,7 +302,7 @@ signals:
 namespace mlayout
 {
 
-
+#if 0
 class Layout3DParam : public QHBoxLayout
 {
     Q_OBJECT
@@ -333,7 +333,38 @@ signals:
     void xyzEditedVector(const QVector3D& vec);
     void xyzEditedQuaternion(const QQuaternion& qut);
 };
+#else
+class Layout3DParam : public QHBoxLayout
+{
+    Q_OBJECT
+public:
+    explicit Layout3DParam(QWidget *parent);
 
+public slots:
+    void setV3Value(const QVector3D& vec);
+    void setQuaternionValue(const QQuaternion& qut);
+    void setX(const double& val) { editX->setValue(val); }
+    void setY(const double& val) { editY->setValue(val); }
+    void setZ(const double& val) { editZ->setValue(val); }
+
+private:
+    QDoubleSpinBox *editX;
+    QDoubleSpinBox *editY;
+    QDoubleSpinBox *editZ;
+
+private slots:
+    void emitXEdited();
+    void emitYEdited();
+    void emitZEdited();
+
+signals:
+    void xEdited(const double& val);
+    void yEdited(const double& val);
+    void zEdited(const double& val);
+    void xyzEditedVector(const QVector3D& vec);
+    void xyzEditedQuaternion(const QQuaternion& qut);
+};
+#endif
 
 
 

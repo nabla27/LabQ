@@ -14,22 +14,22 @@ CONFIG += c++11
 SOURCES += \
     ../LabQHome/layoutparts.cpp \
     ../LabQHome/utility.cpp \
-    componentmanager.cpp \
-    controllerpanel.cpp \
-    graphics3d.cpp \
-    main.cpp \
-    scene3d.cpp \
-    scenemanager.cpp
+    #componentmanager.cpp \
+    #controllerpanel.cpp \
+    #graphics3d.cpp \
+    #main.cpp \
+    #scene3d.cpp \
+    #scenemanager.cpp
 
 HEADERS += \
     ../../../../boost_1_76_0/boost_1_76_0/boost/numeric/odeint.hpp \
     ../LabQHome/layoutparts.h \
     ../LabQHome/utility.h \
-    componentmanager.h \
-    controllerpanel.h \
-    graphics3d.h \
-    scene3d.h \
-    scenemanager.h
+    #componentmanager.h \
+    #controllerpanel.h \
+    #graphics3d.h \
+    #scene3d.h \
+    #scenemanager.h
 
 FORMS +=
 
@@ -41,10 +41,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome \
                E:/boost_1_76_0/boost_1_76_0
 
-include(itemsettingwidget/itemsettingwidget.pri)
-include(custommesh/custommesh.pri)
-include(animation/animation.pri)
-include(numeric/numeric.pri)
+#include(itemsettingwidget/itemsettingwidget.pri)
+#include(custommesh/custommesh.pri)
+#include(animation/animation.pri)
+#include(numeric/numeric.pri)
+include(src/src.pri)
 
-RESOURCES += \
-    equation.qrc
+RESOURCES +=

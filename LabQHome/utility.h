@@ -54,4 +54,19 @@ inline const QRect getRectFromScreenRatio(const QSize& screenSize, const float& 
     return QRect(px, py, screenSize.width() * rw, screenSize.height() * rh);
 }
 
+
+template <typename T>
+inline size_t digits(T value)
+{
+    if(value < 0) value = -value;
+
+    size_t digits = 0;
+    while(value > 0)
+    {
+        value /= 10;
+        digits++;
+    }
+    return digits;
+}
+
 #endif // UTILITY_H
