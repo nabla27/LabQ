@@ -1,5 +1,8 @@
 #include "graphics3d.h"
 
+#include "animation/abstract_equation_setting_widget.h"
+#include "numeric/lotka_volterra.h"
+
 Graphics3D::Graphics3D(QWidget *parent)
     : QMainWindow(parent)
 {

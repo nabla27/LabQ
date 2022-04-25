@@ -3,6 +3,7 @@
 
 #include <Qt3DRender/QGeometryRenderer>
 #include <Qt3DCore/QGeometry>
+#include <QGenericMatrix>
 
 class SurfaceSquareGeometry : public Qt3DCore::QGeometry
 {

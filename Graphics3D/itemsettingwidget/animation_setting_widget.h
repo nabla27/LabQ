@@ -7,6 +7,11 @@
 #include <Qt3DCore/QTransform>
 #include <QMenu>
 #include "animation/orbitcontroller.h"
+
+#include "animation/position_time_controller.h"
+#include "numeric/lotka_volterra.h"
+#include "animation/abstract_equation_setting_widget.h"
+
 #include "layoutparts.h"
 
 
@@ -21,6 +26,7 @@ public:
 private slots:
     void requestOrbitAnimation();
     void requestPauseAnimation();
+    void requestLotkaVolterraAnimation();
 
 private:
     QVBoxLayout *vLayout;

@@ -81,13 +81,6 @@ OrbitAnimationSettingWidget::OrbitAnimationSettingWidget(PropertyAnimation *anim
     radius->setValue(controller->radius());
 
     connect(radius, &mlayout::DoubleSbLayout::valueChanged, controller, &OrbitController::setRadius);
-    connect(animation, &PropertyAnimation::finished, this, &OrbitAnimationSettingWidget::initAnimation);
-}
-
-void OrbitAnimationSettingWidget::initAnimation()
-{
-    controller->setAngle(animation->startValue().toFloat());
-    animation->setCurrentTime(0);
 }
 
 

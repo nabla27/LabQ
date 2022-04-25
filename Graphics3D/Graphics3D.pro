@@ -22,6 +22,7 @@ SOURCES += \
     scenemanager.cpp
 
 HEADERS += \
+    ../../../../boost_1_76_0/boost_1_76_0/boost/numeric/odeint.hpp \
     ../LabQHome/layoutparts.h \
     ../LabQHome/utility.h \
     componentmanager.h \
@@ -37,8 +38,13 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome
+INCLUDEPATH += E:/repos/qt_project/LabQ/LabQHome \
+               E:/boost_1_76_0/boost_1_76_0
 
 include(itemsettingwidget/itemsettingwidget.pri)
 include(custommesh/custommesh.pri)
 include(animation/animation.pri)
+include(numeric/numeric.pri)
+
+RESOURCES += \
+    equation.qrc

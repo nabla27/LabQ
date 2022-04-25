@@ -85,17 +85,27 @@ void ControllerPanel::resetAnimation()
 
 void ControllerPanel::setCurrentTime(const int msecs)
 {
-    /*
     switch(animationGroup->state())
     {
+    /* state状態がstoppedだと、スライドバーを動かしてもanimationのcurrentTimeと
+     * currentValueが設定されてもanimationのcontrollerが実行されない。*/
     case QAbstractAnimation::State::Stopped:
         animationGroup->start();
         animationGroup->pause();
         break;
+    /* sliderでループをまたぐ時に、以下のPausedとRunningの処理が必要
+     * これがなければ、loopモードでスライダーを使ってループをまたいだ後、スライダーで
+     * オブジェクトを動かせなくなる。*/
+    case QAbstractAnimation::State::Paused:
+        //これがないと、ループをまたいだとき、スライダーによる操作が効かなくなる
+        animationGroup->resume(); break;
+    case QAbstractAnimation::State::Running:
+        //これがないと、ループをまたいだとき、animationが再生され、自動で動くようになってしまう
+        animationGroup->pause(); break;
     default:
         break;
     }
-    */
+
     animationGroup->setCurrentTime(msecs);
 }
 

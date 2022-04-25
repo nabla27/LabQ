@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="equation_lotka_volterra">sources/equation/lotka_volterra.png</file>
+    </qresource>
+</RCC>

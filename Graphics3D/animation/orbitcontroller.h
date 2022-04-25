@@ -53,7 +53,7 @@ public:
 private:
     OrbitController *controller;
     PropertyAnimation *animation;
-    void initAnimation();
+    //void initAnimation();
 
 signals:
     void indexChanged(const int index);

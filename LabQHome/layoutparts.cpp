@@ -363,6 +363,20 @@ DoubleSbLayout::DoubleSbLayout(const QString& name, QWidget *parent, const int l
     connect(spinBox, &QDoubleSpinBox::valueChanged, this, &DoubleSbLayout::valueChanged);
 }
 
+void DoubleSbLayout::setTextColor(const QColor &color)
+{
+    QPalette p = spinBox->palette();
+    p.setColor(QPalette::Text, color);
+    spinBox->setPalette(p);
+}
+
+void DoubleSbLayout::setBackColor(const QColor &color)
+{
+    QPalette p = spinBox->palette();
+    p.setColor(QPalette::Base, color);
+    spinBox->setPalette(p);
+}
+
 
 
 

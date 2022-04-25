@@ -136,6 +136,7 @@ void MaterialSettingWidget::changeMaterial(const int index)
 
 
 DiffuseMapSettingWidget::DiffuseMapSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -149,6 +150,7 @@ void DiffuseMapSettingWidget::setMaterial(Qt3DExtras::QDiffuseMapMaterial *mater
 
 
 DiffuseSpecularMapSettingWidget::DiffuseSpecularMapSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -162,6 +164,7 @@ void DiffuseSpecularMapSettingWidget::setMaterial(Qt3DExtras::QDiffuseSpecularMa
 
 
 DiffuseSpecularSettingWidget::DiffuseSpecularSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -175,6 +178,7 @@ void DiffuseSpecularSettingWidget::setMaterial(Qt3DExtras::QDiffuseSpecularMater
 
 
 GoochSettingWidget::GoochSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -188,6 +192,7 @@ void GoochSettingWidget::setMaterial(Qt3DExtras::QGoochMaterial *material)
 
 
 MetalRoughSettingWidget::MetalRoughSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -201,6 +206,7 @@ void MetalRoughSettingWidget::setMaterial(Qt3DExtras::QMetalRoughMaterial *mater
 
 
 MorphPhongSettingWidget::MorphPhongSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -227,6 +233,7 @@ void NormalDiffuseMapSettingWidget::setMaterial(Qt3DExtras::QNormalDiffuseMapMat
 
 
 NormalDiffuseSpecularMapSettingWidget::NormalDiffuseSpecularMapSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -240,6 +247,7 @@ void NormalDiffuseSpecularMapSettingWidget::setMaterial(Qt3DExtras::QNormalDiffu
 
 
 PerVertexColorSettingWidget::PerVertexColorSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -253,6 +261,7 @@ void PerVertexColorSettingWidget::setMaterial(Qt3DExtras::QPerVertexColorMateria
 
 
 PhongAlphaSettingWidget::PhongAlphaSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }
@@ -325,6 +334,7 @@ void PhongSettingWidget::initParameter(Qt3DExtras::QPhongMaterial *material)
 
 
 TextureSettingWidget::TextureSettingWidget(QWidget *parent)
+    : QWidget(parent)
 {
 
 }

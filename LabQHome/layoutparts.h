@@ -392,6 +392,8 @@ public:
     explicit DoubleSbLayout(const QString& name, QWidget *parent, const int labelWidth);
     void setSpinBoxMaxValue(const double max) { spinBox->setMaximum(max); }
     void setSpinBoxMinValue(const double min) { spinBox->setMinimum(min); }
+    void setTextColor(const QColor& color);
+    void setBackColor(const QColor& color);
     double value() { return spinBox->value(); }
 
 public slots:
@@ -439,6 +441,7 @@ class ComboBoxLayout : public QHBoxLayout
 public:
     explicit ComboBoxLayout(const QString& name, QWidget *parent, const int labelWidth);
     void setItems(const QStringList& list) { combo->addItems(list); }
+    int currentIndex() const { return combo->currentIndex(); }
 
 public slots:
     void setCurrentIndex(const int index) { combo->setCurrentIndex(index); }

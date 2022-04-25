@@ -29,13 +29,16 @@ AnimationSettingWidget::AnimationSettingWidget(Qt3DCore::QTransform *transform, 
     QMenu *animationMenu = new QMenu(addAnimationButton);
     QAction *addOrbitAnimation = new QAction("Orbit", animationMenu);
     QAction *addPauseAnimation = new QAction("Pause", animationMenu);
+    QAction *addLotkaVolterraAnimation = new QAction("Lotka Volterra", animationMenu);
 
     addAnimationButton->setMenu(animationMenu);
     animationMenu->addAction(addOrbitAnimation);
     animationMenu->addAction(addPauseAnimation);
+    animationMenu->addAction(addLotkaVolterraAnimation);
 
     connect(addOrbitAnimation, &QAction::triggered, this, &AnimationSettingWidget::requestOrbitAnimation);
     connect(addPauseAnimation, &QAction::triggered, this, &AnimationSettingWidget::requestPauseAnimation);
+    connect(addLotkaVolterraAnimation, &QAction::triggered, this, &AnimationSettingWidget::requestLotkaVolterraAnimation);
 }
 
 void AnimationSettingWidget::requestOrbitAnimation()
@@ -44,7 +47,7 @@ void AnimationSettingWidget::requestOrbitAnimation()
     OrbitAnimationSettingWidget *widget = new OrbitAnimationSettingWidget(animation, transform, this);
 
     vLayout->insertWidget(sequensAnimation->animationCount() + 1, widget);
-    sequensAnimation->addAnimation(animation);;
+    sequensAnimation->addAnimation(animation);
 }
 
 void AnimationSettingWidget::requestPauseAnimation()
@@ -54,6 +57,26 @@ void AnimationSettingWidget::requestPauseAnimation()
     PauseAnimationSettingWidget *widget = new PauseAnimationSettingWidget(animation, this);
 
     vLayout->insertWidget(sequensAnimation->animationCount(), widget);
+}
+
+void AnimationSettingWidget::requestLotkaVolterraAnimation()
+{
+
+    AbstractEquationSettingWidget *equationSetting = new AbstractEquationSettingWidget(equation::LotkaVolterra::varList(),
+                                                                                       equation::LotkaVolterra::paramList(),
+                                                                                       nullptr);
+    PropertyAnimation *animation = new PropertyAnimation(transform);
+
+    PositionTimeAnimationSettingWidget *widget = new PositionTimeAnimationSettingWidget(animation, transform, equationSetting, this);
+
+    connect(widget, &PositionTimeAnimationSettingWidget::calculationRequested, &equation::LotkaVolterra::solve);
+
+    equationSetting->setWindowTitle(windowTitle() + " LotkaVolterra");
+    equationSetting->setEquationPixmap(equation::LotkaVolterra::equationPixmap());
+    equationSetting->setAlgorithmList(equation::stepperAlgorithmList());
+
+    vLayout->insertWidget(sequensAnimation->animationCount() + 1, widget);
+    sequensAnimation->addAnimation(animation);
 }
 
 
