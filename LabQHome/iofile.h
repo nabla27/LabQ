@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QTextStream>
 
-inline bool toFileTxt(const QString& fileName, const QString& data)
+inline void toFileTxt(const QString& fileName, const QString& data, bool* ok = nullptr)
 {
     QFile file(fileName);
 
@@ -14,13 +14,13 @@ inline bool toFileTxt(const QString& fileName, const QString& data)
         QTextStream out(&file);
         out << data;
         file.close();
-        return true;
+        if(ok) *ok = true;
     }
-
-    return false;
+    else
+        if(ok) *ok = false;
 }
 
-inline bool toFileCsv(const QString& filename, const QList<QList<QString> >& sheet)
+inline void toFileCsv(const QString& filename, const QList<QList<QString> >& sheet, bool *ok = nullptr)
 {
     QString data;
     for(qsizetype row = 0; row < sheet.size(); ++row){
@@ -32,10 +32,10 @@ inline bool toFileCsv(const QString& filename, const QList<QList<QString> >& she
         if(row != sheet.size() - 1) { data += "\n"; }
     }
 
-    return toFileTxt(filename, data);
+    toFileTxt(filename, data, ok);
 }
 
-inline QString readFileTxt(const QString& fileName)
+inline QString readFileTxt(const QString& fileName, bool *ok = nullptr)
 {
     QFile file(fileName);
 
@@ -43,13 +43,18 @@ inline QString readFileTxt(const QString& fileName)
     {
         QTextStream in(&file);
         const QString data = in.readAll();
+        if(ok) *ok = true;
+
         return data;
     }
-
-    return "\0";
+    else
+    {
+        if(ok) *ok = false;
+        return QString();
+    }
 }
 
-inline bool readFileTxt(const QString& fileName, QString& text)
+inline void readFileTxt(const QString& fileName, QString& text, bool *ok = nullptr)
 {
     QFile file(fileName);
 
@@ -57,38 +62,48 @@ inline bool readFileTxt(const QString& fileName, QString& text)
     {
         QTextStream in(&file);
         text = in.readAll();
-        return true;
+
+        if(ok) *ok = true;
     }
     else
-        return false;
+        if(ok) *ok = false;
 }
 
-inline QList<QList<QString> > readFileCsv(const QString& fileName)
+inline QList<QList<QString> > readFileCsv(const QString& fileName, bool *ok = nullptr)
 {
-    const QString data = readFileTxt(fileName);  //ファイルの内容(text)をQString型で保持
+    const QString data = readFileTxt(fileName, ok);  //ファイルの内容(text)をQString型で保持
 
-    QList<QList<QString> > sheet(1);             //csvデータを2次元のQString型で返す
-    qsizetype row = 0;                           //行数
-    QString stack = "";                          //スタック
-
-    for(const QChar& c : data)
+    if(ok && *ok)
     {
-        if(c == '\n'){
-            sheet[row] << stack;
-            stack.clear();
-            sheet.append(QList<QString>(0));
-            row++;
-        }
-        else if(c == ','){
-            sheet[row] << stack;
-            stack.clear();
-        }
-        else
-            stack += c;
-    }
-    sheet[row] << stack;
+        QList<QList<QString> > sheet(1);                 //csvデータを2次元のQString型で返す
+        qsizetype row = 0;                               //行数
+        QString stack = "";                              //スタック
 
-    return sheet;
+        for(const QChar& c : data)
+        {
+            if(c == '\n'){
+                sheet[row] << stack;
+                stack.clear();
+                sheet.append(QList<QString>(0));
+                row++;
+            }
+            else if(c == ','){
+                sheet[row] << stack;
+                stack.clear();
+            }
+            else
+                stack += c;
+        }
+        sheet[row] << stack;
+
+        *ok = true;
+        return sheet;
+    }
+    else
+    {
+        if(ok) *ok = false;
+        return QList<QList<QString> >();
+    }
 }
 
 #endif // IOFILE_H

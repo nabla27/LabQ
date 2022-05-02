@@ -193,7 +193,10 @@ FormulaExpLineEdit::FormulaExpLineEdit(QWidget *parent, QLineEdit *edit)
 
 void FormulaExpLineEdit::applyFormulaExp()
 {
-    FormulaExp formula(edit->text());
+    const QString exp = edit->text();
+    if(exp.isEmpty()) return;
+
+    FormulaExp formula(exp);
     setText(QString::number(formula.calculate()));
 }
 

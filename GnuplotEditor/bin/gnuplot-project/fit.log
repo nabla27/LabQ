@@ -1,0 +1,236 @@
+
+
+*******************************************************************************
+Sat Apr 30 22:15:07 2022
+
+
+FIT:    data read from "data.csv" using 1:2
+        format = x:z
+BREAK: No data to fit
+
+*******************************************************************************
+Sat Apr 30 22:15:33 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 2.7600000000e+02   0.00e+00  7.14e+00    2.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sat Apr 30 22:15:59 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 2.7600000000e+02   0.00e+00  7.14e+00    2.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sat Apr 30 22:16:07 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 2.7600000000e+02   0.00e+00  7.14e+00    2.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:39:41 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:39:59 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:40:02 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:43:35 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:45:21 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:45:26 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:45:54 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 18:46:04 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR
+
+*******************************************************************************
+Sun May 01 19:00:22 2022
+
+
+FIT:    data read from "5.csv" using 1:2
+        format = x:z
+        x range restricted to [0.00000 : 10.0000]
+        #datapoints = 8
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a * x + b
+fitted parameters initialized with current variable values
+
+Warning: Initial value of parameter 'b' is zero.
+iter      chisq       delta/lim  lambda   a             b            
+   0 1.4000000000e+01   0.00e+00  3.57e+00    1.000000e+00   1.000000e-30
+BREAK: Singular matrix in Invert_RtR

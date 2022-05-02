@@ -20,6 +20,8 @@ QMap<QString, int> FormulaExp::operatorList =
 
 FormulaExp::FormulaExp(const QString& formula)
 {
+    if(formula.isEmpty()) return;
+
     enum class TokenType{ Operator, Value, Bracket, Other, Init };
     TokenType previousT = TokenType::Init, currentT = TokenType::Init;
     qsizetype index = -1;
@@ -48,9 +50,9 @@ FormulaExp::FormulaExp(const QString& formula)
         tokenList.push_front("0");
 }
 
-const double FormulaExp::calculate()
+double FormulaExp::calculate()
 {
-    QList<QString> operatorStack;
+    QVector<QString> operatorStack;
     QList<double> valueStack;
 
     for(const QString& token : tokenList)
@@ -123,5 +125,8 @@ const double FormulaExp::calculate()
         }
     }
 
-    return valueStack.takeFirst();
+    if(valueStack.isEmpty())
+        return 0;
+    else
+        return valueStack.takeFirst();
 }

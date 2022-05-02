@@ -1,5 +1,8 @@
 #include "componentmanager.h"
 
+#include "custommesh/surfacegridgeometry.h"
+#include "itemsettingwidget/grid_mesh_setting_widget.h"
+
 /* component ---|--- BasicShape ---> BasicShapeSettingWidget
  *
  */
@@ -37,6 +40,8 @@ void ComponentManager::initializeAddObjectMenu()
         QAction *plane = new QAction("plane", basicShape);
         QAction *sphere = new QAction("sphere", basicShape);
         QAction *torus = new QAction("torus", basicShape);
+    QMenu *gridLine = new QMenu("Grid line", addObjectMenu);
+        QAction *dynamicSurfaceGrid = new QAction("dynamic surface grid", gridLine);
 
     addObjectMenu->addMenu(basicShape);
         basicShape->addAction(cone);
@@ -45,9 +50,13 @@ void ComponentManager::initializeAddObjectMenu()
         basicShape->addAction(plane);
         basicShape->addAction(sphere);
         basicShape->addAction(torus);
+    addObjectMenu->addMenu(gridLine);
+        gridLine->addAction(dynamicSurfaceGrid);
 
     connect(torus, &QAction::triggered, this, &ComponentManager::requestBasicShapeTorus);
     connect(plane, &QAction::triggered, this, &ComponentManager::requestBasicShapePlane);
+
+    connect(dynamicSurfaceGrid, &QAction::triggered, this, &ComponentManager::requestDynamicSurfaceGrid);
 
     addObjectButton->setMenu(addObjectMenu);
 }
@@ -71,7 +80,7 @@ void ComponentManager::requestBasicShape(Qt3DRender::QGeometryRenderer *mesh, QW
     /* オブジェクト一覧(objectTree)への追加 */
     ObjectTreeItem *treeItem = new ObjectTreeItem(objectTree, widget);
     static unsigned int itemCounter = 0;
-    treeItem->setText(0, meshWidget->objectName() + " " + QString::number(++itemCounter));
+    treeItem->setText(0, QString::number(++itemCounter) + "   " + meshWidget->objectName());
     treeItem->setCheckState(0, Qt::CheckState::Checked);
     connect(treeItem, &ObjectTreeItem::clickedCheckState0, entity, &Qt3DCore::QEntity::setEnabled);
 
@@ -89,6 +98,15 @@ void ComponentManager::requestBasicShapePlane()
 {
     Qt3DExtras::QPlaneMesh *mesh = new Qt3DExtras::QPlaneMesh();
     requestBasicShape(mesh, new PlaneMeshSettingWidget(mesh));
+}
+
+void ComponentManager::requestDynamicSurfaceGrid()
+{
+    SurfaceGridMesh *mesh = new SurfaceGridMesh();
+    SurfaceGridMeshSettingWidget *w = new SurfaceGridMeshSettingWidget(mesh);
+    requestBasicShape(mesh, w);
+
+    emit animationAdded(w->animation());
 }
 
 

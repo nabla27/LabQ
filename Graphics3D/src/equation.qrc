@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file alias="equation_lotka_volterra">resources/equation/lotka_volterra.png</file>
+        <file alias="equation_wave">resources/equation/wave.png</file>
     </qresource>
 </RCC>

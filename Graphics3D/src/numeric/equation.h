@@ -5,6 +5,7 @@
 #include <QMap>
 #include <array>
 #include <QDebug>
+#include <QByteArrayList>
 
 /* 以下のboostインクルードで<boost/mpl/bitand.hpp>が含まれるが、そのままでは
  * コンパイルエラーになる。これはmocかboostのバグが原因。
@@ -66,7 +67,6 @@ namespace equation
 
 
 
-
     template<typename System, typename State, typename Time, typename Observer>
     static size_t boost_integrate_const(int stepperType, System system, State& start_state,
                            Time start_time, Time end_time, Time dt, Observer observer)
@@ -118,7 +118,7 @@ public:
     FormulaExp(const QString& formula);
 
 public:
-    const double calculate();
+    double calculate();
     QMap<QString, double> variableList = { {"pi", 3.141592653589793238} };
     static QMap<QString, int> operatorList;
 

@@ -13,10 +13,10 @@ TorusMeshSettingWidget::TorusMeshSettingWidget(Qt3DExtras::QTorusMesh *mesh)
     mesh->setSlices(20);
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
-    mlayout::Layout1DParam *minorRadius = new mlayout::Layout1DParam("Minor radius", this);
-    mlayout::Layout1DParam *radius = new mlayout::Layout1DParam("Radius", this);
-    SpinBoxEditLayout *rings = new SpinBoxEditLayout(this, "Rings", label_width_mesh);
-    SpinBoxEditLayout *slices = new SpinBoxEditLayout(this, "Slices", label_width_mesh);
+    mlayout::DoubleSbLayout *minorRadius = new mlayout::DoubleSbLayout("Minor radius", this, label_width_mesh);
+    mlayout::DoubleSbLayout *radius = new mlayout::DoubleSbLayout("Radius", this, label_width_mesh);
+    mlayout::IntSbLayout *rings = new mlayout::IntSbLayout("Rings", this, label_width_mesh);
+    mlayout::IntSbLayout *slices = new mlayout::IntSbLayout("Slices", this, label_width_mesh);
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     setLayout(vLayout);
@@ -28,20 +28,23 @@ TorusMeshSettingWidget::TorusMeshSettingWidget(Qt3DExtras::QTorusMesh *mesh)
 
     minorRadius->setValue(mesh->minorRadius());
     radius->setValue(mesh->radius());
-    rings->setSpinBoxMaxValue(1000);
-    rings->setSpinBoxValue(mesh->rings());
-    slices->setSpinBoxMaxValue(1000);
-    slices->setSpinBoxValue(mesh->slices());
+    rings->setSpinBoxMaxValue(100000);
+    rings->setValue(mesh->rings());
+    slices->setSpinBoxMaxValue(100000);
+    slices->setValue(mesh->slices());
 
-    connect(minorRadius, &mlayout::Layout1DParam::edited, mesh, &Qt3DExtras::QTorusMesh::setMinorRadius);
-    connect(radius, &mlayout::Layout1DParam::edited, mesh, &Qt3DExtras::QTorusMesh::setRadius);
-    connect(rings, &SpinBoxEditLayout::spinBoxValueChanged, mesh, &Qt3DExtras::QTorusMesh::setRings);
-    connect(slices, &SpinBoxEditLayout::spinBoxValueChanged, mesh, &Qt3DExtras::QTorusMesh::setSlices);
+    minorRadius->setDecimals(4);
+    radius->setDecimals(4);
 
-    connect(mesh, &Qt3DExtras::QTorusMesh::minorRadiusChanged, minorRadius, &mlayout::Layout1DParam::setValue);
-    connect(mesh, &Qt3DExtras::QTorusMesh::radiusChanged, radius, &mlayout::Layout1DParam::setValue);
-    connect(mesh, &Qt3DExtras::QTorusMesh::ringsChanged, rings, &SpinBoxEditLayout::setSpinBoxValue);
-    connect(mesh, &Qt3DExtras::QTorusMesh::slicesChanged, slices, &SpinBoxEditLayout::setSpinBoxValue);
+    connect(minorRadius, &mlayout::DoubleSbLayout::valueChanged, mesh, &Qt3DExtras::QTorusMesh::setMinorRadius);
+    connect(radius, &mlayout::DoubleSbLayout::valueChanged, mesh, &Qt3DExtras::QTorusMesh::setRadius);
+    connect(rings, &mlayout::IntSbLayout::valueChanged, mesh, &Qt3DExtras::QTorusMesh::setRings);
+    connect(slices, &mlayout::IntSbLayout::valueChanged, mesh, &Qt3DExtras::QTorusMesh::setSlices);
+
+    connect(mesh, &Qt3DExtras::QTorusMesh::minorRadiusChanged, minorRadius, &mlayout::DoubleSbLayout::setValue);
+    connect(mesh, &Qt3DExtras::QTorusMesh::radiusChanged, radius, &mlayout::DoubleSbLayout::setValue);
+    connect(mesh, &Qt3DExtras::QTorusMesh::ringsChanged, rings, &mlayout::IntSbLayout::setValue);
+    connect(mesh, &Qt3DExtras::QTorusMesh::slicesChanged, slices, &mlayout::IntSbLayout::setValue);
 
     vLayout->setContentsMargins(0, 0, 0, 0);
 }

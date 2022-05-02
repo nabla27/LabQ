@@ -28,6 +28,7 @@ private slots:
     void requestBasicShape(Qt3DRender::QGeometryRenderer *mesh, QWidget *meshWidget);
     void requestBasicShapeTorus();
     void requestBasicShapePlane();
+    void requestDynamicSurfaceGrid();
 
 private:
     QPushButton *addObjectButton;

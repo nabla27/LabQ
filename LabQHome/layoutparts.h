@@ -425,6 +425,7 @@ public:
     void setSpinBoxMinValue(const double min) { spinBox->setMinimum(min); }
     void setTextColor(const QColor& color);
     void setBackColor(const QColor& color);
+    void setDecimals(int decimals) { spinBox->setDecimals(decimals); }
     double value() { return spinBox->value(); }
 
 public slots:
