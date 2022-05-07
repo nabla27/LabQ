@@ -1,10 +1,12 @@
 #include "gnuploteditor.h"
+#include "imagedisplay.h"
 
 GnuplotEditor::GnuplotEditor(QWidget *parent)
     : QMainWindow(parent)
     , gnuplot(new Gnuplot(this))
     , editorSetting(new EditorSettingWidget(nullptr))
     , gnuplotSetting(new GnuplotSettingWidget(gnuplot, nullptr))
+    , updateManager(new UpdateManager(this))
 {
     /* ウィンドウをスクリーン画面に対して(0.4,0.5)の比率サイズに設定 */
     setGeometry(getRectFromScreenRatio(screen()->size(), 0.4f, 0.5f));
@@ -23,9 +25,6 @@ GnuplotEditor::GnuplotEditor(QWidget *parent)
     //初期化
     fileTree->setFolderPath(path);
     gnuplot->setWorkingDirectory(path);
-
-
-
 
     connect(this, &GnuplotEditor::workingDirectoryChanged, fileTree, &FileTree::setFolderPath);
     connect(this, &GnuplotEditor::workingDirectoryChanged, gnuplot, &Gnuplot::setWorkingDirectory);
@@ -86,6 +85,7 @@ void GnuplotEditor::initializeMenuBar()
     //connect(widgetMenu, &WidgetMenu::clearConsoleWindowPushed, consoleWidget, &);
     connect(widgetMenu, &WidgetMenu::editorSettingOpened, editorSetting, &EditorSettingWidget::show);
     connect(widgetMenu, &WidgetMenu::gnuplotSettingOpened, gnuplotSetting, &GnuplotSettingWidget::show);
+    connect(helpMenu, &HelpMenu::updateManagerRequested, updateManager, &UpdateManager::show);
     connect(runAction, &QAction::triggered, this, &GnuplotEditor::executeGnuplot);
 }
 
@@ -212,10 +212,24 @@ void GnuplotEditor::setSheetWidget(const QString& fileName, const SheetInfo* inf
     /* メニューバーの名前変更 */
     sheetMenu->setTitle(fileName);
 }
-#include <QImageReader>
+
 void GnuplotEditor::setOtherWidget(const QString& fileName, const OtherInfo* info)
 {
-    QImageReader::
+    const qsizetype extStartIndex = fileName.lastIndexOf('.');
+
+    if(extStartIndex == qsizetype(-1) &&    //ドットを含まない
+       fileName.size() <= extStartIndex + 1) //ドット以降に文字がない
+    { return; }
+
+    //拡張子
+    const QString extension = fileName.sliced(extStartIndex + 1);
+
+    if(ImageDisplay::isValidExtension(extension))
+    {   //画像の表示
+        ImageDisplay *imageDisplay = new ImageDisplay(nullptr);  //ウィンドウ閉じたら自動でdeleteされるよ!
+        imageDisplay->setImageFile(fileTree->currentFolderPath() + "/" + fileName);
+        imageDisplay->show();
+    }
 }
 
 void GnuplotEditor::setMenuBarTitle(const QString& oldName, const QString& newName)
