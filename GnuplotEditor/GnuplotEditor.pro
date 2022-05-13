@@ -9,10 +9,6 @@ CONFIG += c++11
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-OPENSSL_DIR = C:/Qt/Tools/OpenSSL/Win_x64
-LIBS += $${OPENSSL_DIR}/lib/libcrypto.lib
-LIBS += $${OPENSSL_DIR}/lib/libssl.lib
-
 SOURCES += \
     ../LabQHome/layoutparts.cpp \
     ../LabQHome/tablewidget.cpp \
@@ -26,6 +22,7 @@ HEADERS += \
 
 INCLUDEPATH += E:/boost_1_76_0/boost_1_76_0 \
                E:/repos/qt_project/LabQ/LabQHome \
+               E:/zipper \
 
 include(src/src.pri)
 

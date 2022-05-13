@@ -1,12 +1,13 @@
 #include "gnuploteditor.h"
 #include "imagedisplay.h"
 
-GnuplotEditor::GnuplotEditor(QWidget *parent)
+GnuplotEditor::GnuplotEditor(const QString& oldApp, QWidget *parent)
     : QMainWindow(parent)
     , gnuplot(new Gnuplot(this))
     , editorSetting(new EditorSettingWidget(nullptr))
     , gnuplotSetting(new GnuplotSettingWidget(gnuplot, nullptr))
     , updateManager(new UpdateManager(this))
+    , oldAppFolderPath(oldApp)
 {
     /* ウィンドウをスクリーン画面に対して(0.4,0.5)の比率サイズに設定 */
     setGeometry(getRectFromScreenRatio(screen()->size(), 0.4f, 0.5f));
@@ -40,14 +41,29 @@ GnuplotEditor::GnuplotEditor(QWidget *parent)
     connect(gnuplot, &Gnuplot::standardErrorPassed, this, &GnuplotEditor::receiveGnuplotStdErr);
     connect(gnuplot, &Gnuplot::errorCaused, browserWidget, &BrowserWidget::outputText);
     connect(browserWidget, &BrowserWidget::textChanged, [this](){ displayTab->setCurrentIndex(1); });
+    connect(updateManager, &UpdateManager::closeApplicationRequested, this, &GnuplotEditor::closeApplication);
 }
 
 GnuplotEditor::~GnuplotEditor()
+{
+    postProcess();
+}
+
+void GnuplotEditor::postProcess()
 {
     editorSetting->hide();
     gnuplotSetting->hide();
     delete editorSetting;
     delete gnuplotSetting;
+
+    if(!oldAppFolderPath.isEmpty())
+    {
+        QDir oldApp(oldAppFolderPath);
+        oldApp.removeRecursively();
+        oldApp.rmdir(oldAppFolderPath);
+        oldApp.removeRecursively();
+        oldApp.rmdir(oldAppFolderPath);
+    }
 }
 
 void GnuplotEditor::initializeMenuBar()
@@ -240,6 +256,15 @@ void GnuplotEditor::setMenuBarTitle(const QString& oldName, const QString& newNa
 
 void GnuplotEditor::executeGnuplot()
 {
+    qDebug() << __FILE__ << __LINE__;
+    /* DEBUG */
+    receiveGnuplotStdOut(oldAppFolderPath);
+    QDir dir(oldAppFolderPath);
+    if(!dir.removeRecursively())
+        receiveGnuplotStdOut("removeRecursively false");
+    if(!dir.rmdir(oldAppFolderPath))
+        receiveGnuplotStdOut("rmdir false");
+
     /* browserの過去の出力をグレイアウト */
     browserWidget->grayOutAll();
 
@@ -289,6 +314,12 @@ void GnuplotEditor::setDisplayTabHeight(const int dy)
     const int nextHeight = displayTab->maximumHeight() + dy;
     if(nextHeight < 0 || nextHeight > 600) return;
     displayTab->setMaximumHeight(nextHeight);
+}
+
+void GnuplotEditor::closeApplication()
+{
+    postProcess();
+    exit(0);
 }
 
 
