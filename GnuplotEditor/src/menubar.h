@@ -31,10 +31,11 @@ public:
     WidgetMenu(const QString& title, QWidget *parent);
 
 signals:
-    void clearOutputWindowPushed();
-    void clearConsoleWindowPushed();
-    void editorSettingOpened();
-    void gnuplotSettingOpened();
+    void clearOutputWindowRequested();
+    void clearConsoleWindowRequested();
+    void openEditorSettingRequested();
+    void openGnuplotSettingRequested();
+    void openTemplateCustomRequested();
 };
 
 
@@ -46,7 +47,7 @@ public:
     HelpMenu(const QString& title, QWidget *parent);
 
 signals:
-    void updateManagerRequested();
+    void rebootRequested();
 };
 
 
@@ -56,6 +57,10 @@ class ScriptMenu : public QMenu
 
 public:
     ScriptMenu(const QString& title, QWidget *parent);
+
+signals:
+    void closeProcessRequested();
+    void saveAsTemplateRequested();
 };
 
 
@@ -65,6 +70,15 @@ class SheetMenu : public QMenu
 
 public:
     SheetMenu(const QString& title, QWidget *parent);
+
+    void setAutoUpdateMenuText(const bool isEnable);
+
+private:
+    QAction *autoUpdateAction;
+
+signals:
+    void openInNewWindowRequested();
+    void autoTableUpdateRequested();
 };
 
 

@@ -519,6 +519,34 @@ signals:
     void clicked(const bool checked);
 };
 
+class IconLabel : public QLabel
+{
+    Q_OBJECT
+public:
+    explicit IconLabel(const QString& text, QWidget *parent);
+    explicit IconLabel(QWidget *parent);
+
+protected:
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+public:
+    void setHoveredPalette(const QPalette& p) { hoveredPalette = p; }
+    void setHoveredFrameShape(const QFrame::Shape shape) { hoveredFrameShape = shape; }
+
+private:
+    QPalette normalPalette;
+    QPalette hoveredPalette;
+    QFrame::Shape normalFrameShape;
+    QFrame::Shape hoveredFrameShape;
+
+signals:
+    void released();
+
+};
+
 
 
 

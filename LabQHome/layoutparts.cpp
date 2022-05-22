@@ -545,6 +545,62 @@ CheckBoxLayout::CheckBoxLayout(const QString& name, QWidget *parent, const int l
 
 
 
+
+
+
+IconLabel::IconLabel(const QString& text, QWidget *parent) : QLabel(text, parent)
+{
+    normalPalette = this->palette();
+    normalFrameShape = this->frameShape();
+    hoveredPalette = normalPalette;
+    hoveredFrameShape = normalFrameShape;
+}
+IconLabel::IconLabel(QWidget *parent) : QLabel(parent)
+{
+    normalPalette = this->palette();
+    normalFrameShape = this->frameShape();
+    hoveredPalette = normalPalette;
+    hoveredFrameShape = normalFrameShape;
+}
+
+void IconLabel::enterEvent(QEnterEvent *event)
+{
+    normalPalette = palette();
+    normalFrameShape = frameShape();
+
+    setPalette(hoveredPalette);
+    setFrameShape(hoveredFrameShape);
+
+    QLabel::enterEvent(event);
+}
+
+void IconLabel::leaveEvent(QEvent *event)
+{
+    setPalette(normalPalette);
+    setFrameShape(normalFrameShape);
+
+    QLabel::leaveEvent(event);
+}
+
+void IconLabel::mousePressEvent(QMouseEvent*)
+{
+    setPalette(normalPalette);
+    setFrameShape(normalFrameShape);
+}
+
+void IconLabel::mouseReleaseEvent(QMouseEvent *event)
+{
+    setPalette(hoveredPalette);
+    setFrameShape(hoveredFrameShape);
+
+    emit released();
+
+    QLabel::mousePressEvent(event);
+}
+
+
+
+
 }// namespace mlayout
 
 

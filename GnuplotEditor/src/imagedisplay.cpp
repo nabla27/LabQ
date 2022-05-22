@@ -7,11 +7,6 @@ PaintImage::PaintImage(QWidget *parent)
 PaintImage::~PaintImage() {}
 
 
-void PaintImage::setImage(const QImage &img)
-{
-    this->img = img;
-    viewport()->update();
-}
 
 void PaintImage::paintEvent(QPaintEvent*)
 {
@@ -24,6 +19,12 @@ void PaintImage::paintEvent(QPaintEvent*)
     widgetPainter.drawImage(0, 0, img);
 
     emit imageResized(img.size());
+}
+
+void PaintImage::setImage(const QImage &img)
+{
+    this->img = img;
+    viewport()->update();
 }
 
 

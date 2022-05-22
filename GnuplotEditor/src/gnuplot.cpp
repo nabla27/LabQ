@@ -11,23 +11,27 @@ void Gnuplot::exc(QProcess *process, const QList<QString>& cmdlist)
 
     currentProcess = process;
 
-    emit cmdPushed("\n[ " + QDateTime::currentDateTime().toString() + " ]     ProcessID(" + QString::number(process->processId()) + ")");
-
     /* 標準出力 */
     QObject::connect(process, &QProcess::readyReadStandardOutput, this, &Gnuplot::readStandardOutput);
 
     /* 標準エラー */
     QObject::connect(process, &QProcess::readyReadStandardError, this, &Gnuplot::readStandardError);
 
+    /* プロセスエラー */
+    QObject::connect(process, &QProcess::errorOccurred, this, &Gnuplot::receiveProcessError);
+    QObject::connect(process, &QProcess::errorOccurred, process, &QProcess::close);
+
     /* プロセスの開始 */
     if(process->state() == QProcess::ProcessState::NotRunning)
-    { qDebug() << path;
+    {
         process->start(path, QStringList() << "-persist");
         if(process->error() == QProcess::ProcessError::FailedToStart){
             process->close();
             emit errorCaused("failed to start the gnuplot process.", BrowserWidget::MessageType::ProcessErr);
         }
     }
+
+    emit cmdPushed("\n[ " + QDateTime::currentDateTime().toString() + " ]     ProcessID(" + QString::number(process->processId()) + ")");
 
     /* workingDirectoryに移動 */
     const QString moveDirCmd = "cd '" + workingDirectory + "'";
@@ -90,6 +94,11 @@ void Gnuplot::readStandardError()
         emit standardOutputPassed(output);          //エラーじゃない標準出力でもreadAllStandardError()で拾われてしまう
     else
         emit standardErrorPassed(output, errLine);
+}
+
+void Gnuplot::receiveProcessError(const QProcess::ProcessError& error)
+{
+    emit errorCaused("Process error has occurred [" + enumToString(error) + "]. The process is closed.", BrowserWidget::MessageType::ProcessErr);
 }
 
 

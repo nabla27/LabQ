@@ -44,21 +44,25 @@ void FileMenu::openFolder()
 WidgetMenu::WidgetMenu(const QString& title, QWidget *parent)
     : QMenu(title, parent)
 {
-    QAction *clearConsoleWindow = new QAction("Clear console window", this);
+    QAction *clearConsoleWindow = new QAction("Clear Console Widget", this);
     addAction(clearConsoleWindow);
-    connect(clearConsoleWindow, &QAction::triggered, this, &WidgetMenu::clearConsoleWindowPushed);
+    connect(clearConsoleWindow, &QAction::triggered, this, &WidgetMenu::clearConsoleWindowRequested);
 
-    QAction *clearOutputWindow = new QAction("Clear output window", this);
+    QAction *clearOutputWindow = new QAction("Clear Output Widget", this);
     addAction(clearOutputWindow);
-    connect(clearOutputWindow, &QAction::triggered, this, &WidgetMenu::clearOutputWindowPushed);
+    connect(clearOutputWindow, &QAction::triggered, this, &WidgetMenu::clearOutputWindowRequested);
 
     QAction *openEditorSetting = new QAction("Editor Setting", this);
     addAction(openEditorSetting);
-    connect(openEditorSetting, &QAction::triggered, this, &WidgetMenu::editorSettingOpened);
+    connect(openEditorSetting, &QAction::triggered, this, &WidgetMenu::openEditorSettingRequested);
 
     QAction *openGnuplotSetting = new QAction("Gnuplot Setting", this);
     addAction(openGnuplotSetting);
-    connect(openGnuplotSetting, &QAction::triggered, this, &WidgetMenu::gnuplotSettingOpened);
+    connect(openGnuplotSetting, &QAction::triggered, this, &WidgetMenu::openGnuplotSettingRequested);
+
+    QAction *openTemplateCustom = new QAction("Script Template", this);
+    addAction(openTemplateCustom);
+    connect(openTemplateCustom, &QAction::triggered, this, &WidgetMenu::openTemplateCustomRequested);
 }
 
 
@@ -68,9 +72,9 @@ WidgetMenu::WidgetMenu(const QString& title, QWidget *parent)
 HelpMenu::HelpMenu(const QString& title, QWidget *parent)
     : QMenu(title, parent)
 {
-    QAction *openUpdateManager = new QAction("Update", this);
-    addAction(openUpdateManager);
-    connect(openUpdateManager, &QAction::triggered, this, &HelpMenu::updateManagerRequested);
+    QAction *rebootAction = new QAction("Reboot", this);
+    addAction(rebootAction);
+    connect(rebootAction, &QAction::triggered, this, &HelpMenu::rebootRequested);
 }
 
 
@@ -83,6 +87,11 @@ ScriptMenu::ScriptMenu(const QString& title, QWidget *parent)
 {
     QAction *const closeProcess = new QAction("Close this process", this);
     addAction(closeProcess);
+    connect(closeProcess, &QAction::triggered, this, &ScriptMenu::closeProcessRequested);
+
+    QAction *const saveAsTemplate = new QAction("Save as template", this);
+    addAction(saveAsTemplate);
+    connect(saveAsTemplate, &QAction::triggered, this, &ScriptMenu::saveAsTemplateRequested);
 }
 
 
@@ -93,7 +102,21 @@ ScriptMenu::ScriptMenu(const QString& title, QWidget *parent)
 SheetMenu::SheetMenu(const QString& title, QWidget *parent)
     : QMenu(title, parent)
 {
+    QAction *openInNewWindowAction = new QAction("Open in new window", this);
+    addAction(openInNewWindowAction);
+    connect(openInNewWindowAction, &QAction::triggered, this, &SheetMenu::openInNewWindowRequested);
 
+    autoUpdateAction = new QAction("Enable auto updating", this);
+    addAction(autoUpdateAction);
+    connect(autoUpdateAction, &QAction::triggered, this, &SheetMenu::autoTableUpdateRequested);
+}
+
+void SheetMenu::setAutoUpdateMenuText(const bool isEnable)
+{
+    if(isEnable)
+        autoUpdateAction->setText("Disable auto updating");
+    else
+        autoUpdateAction->setText("Enable auto updating");
 }
 
 
